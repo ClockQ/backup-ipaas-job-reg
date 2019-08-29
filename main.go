@@ -19,17 +19,20 @@ var prefix = "/v1.0/job_reg"
 var WriteTimeout = time.Second * 4
 
 const (
-	LogPath             = "job_reg.log"
-	KafkabRokerUrl      = "123.56.179.133:9092"
-	SchemaRepositoryUrl = "http://123.56.179.133:8081"
-	KafkaGroup          = "test20190828"
-	CaLocation          = "/opt/kafka/pharbers-secrets/snakeoil-ca-1.crt"
-	CASignedLocation    = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
-	SSLKeyLocation      = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
-	SSLPwd              = "pharbers"
-	JobResponseTopic	= "cjob-test2"
-	MqttUrl             = "http://59.110.31.215:6542/v0/publish"
-	MqttChannel			= "test-qi/"
+	LogPath              = "job_reg.log"
+	KafkabRokerUrl       = "123.56.179.133:9092"
+	SchemaRepositoryUrl  = "http://123.56.179.133:8081"
+	KafkaGroup           = "test20190828"
+	CaLocation           = "/opt/kafka/pharbers-secrets/snakeoil-ca-1.crt"
+	CASignedLocation     = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
+	SSLKeyLocation       = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
+	SSLPwd               = "pharbers"
+	JobRequestTopic      = "cjob-test"
+	JobResponseTopic     = "cjob-test2"
+	ConnectRequestTopic  = "ConnectRequest"
+	ConnectResponseTopic = "ConnectResponse"
+	MqttUrl              = "http://59.110.31.215:6542/v0/publish"
+	MqttChannel          = "test-qi/"
 )
 
 func main() {
@@ -41,6 +44,8 @@ func main() {
 	_ = os.Setenv("BM_KAFKA_CA_SIGNED_LOCATION", CASignedLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_KEY_LOCATION", SSLKeyLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
+	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
+	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
 
 	if ok := os.Getenv("REG_PORT"); ok != "" {
 		port = ok
@@ -57,6 +62,7 @@ func main() {
 
 	// 协程启动 Kafka Consumer
 	go kh.Linster([]string{JobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
+	go kh.Linster([]string{ConnectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(mh))
 
 	/// 下面不用管，网上抄的
 	// 主动关闭服务器

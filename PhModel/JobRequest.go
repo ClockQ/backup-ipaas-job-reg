@@ -11,6 +11,7 @@ type JobRequest struct {
 	NumExecutors   string
 	Queue          string
 	Target         string
+	File           string
 	Parameter      string
 }
 
@@ -26,6 +27,7 @@ func (model JobRequest) GenTestData() *JobRequest {
 	model.NumExecutors = "2"
 	model.Queue = "default"
 	model.Target = "hdfs:///jars/context/job-context.jar"
+	model.File = "hdfs:///jars/context/pharbers_config/kafka_config.xml,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.truststore.jks,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.keystore.jks"
 	model.Parameter = "yaml hdfs hdfs:///test/MZclean.yaml"
 	return &model
 }
