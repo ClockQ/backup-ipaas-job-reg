@@ -4,9 +4,19 @@ import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhMessage"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
-	"github.com/alfredyang1986/blackmirror/bmerror"
+	"github.com/alfredyang1986/blackmirror/bmlog"
+	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
+
+// TODO 统统环境变量
+var ip = ""
+var port = "9213"
+var prefix = "/v1.0/job_reg"
+var WriteTimeout = time.Second * 4
 
 const (
 	LogPath             = "job_reg.log"
@@ -17,7 +27,9 @@ const (
 	CASignedLocation    = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
 	SSLKeyLocation      = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
 	SSLPwd              = "pharbers"
-	MqttUrl				= "http://59.110.31.215:6542/v0/publish"
+	JobResponseTopic	= "cjob-test2"
+	MqttUrl             = "http://59.110.31.215:6542/v0/publish"
+	MqttChannel			= "test-qi/"
 )
 
 func main() {
@@ -30,33 +42,60 @@ func main() {
 	_ = os.Setenv("BM_KAFKA_SSL_KEY_LOCATION", SSLKeyLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
 
-	jobRequest := PhModel.JobRequest{}.GenTestData()
-	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).Send("cjob-test", jobRequest)
-	bmerror.PanicError(err)
+	if ok := os.Getenv("REG_PORT"); ok != "" {
+		port = ok
+	}
+	if ok := os.Getenv("REG_PREFIX"); ok != "" {
+		prefix = ok
+	}
+	if ok := os.Getenv("LOG_PATH"); ok == "" {
+		_ = os.Setenv("LOG_PATH", LogPath)
+	}
 
-	jobResponse := PhModel.JobResponse{}
-	err = PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).
-		Linster([]string{"cjob-test2"}, &jobResponse, PhHandler.JobResponseHandler)
-	bmerror.PanicError(err)
+	mh := PhMessage.PhMqttHandler{}.New(MqttUrl, MqttChannel)
+	kh := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl)
 
-	model := jobResponse //PhModel.JobState{}.GenTestData()
-	err = PhMessage.PhMqttHandler{}.New(MqttUrl).Send("test-qi/", model)
-	bmerror.PanicError(err)
-}
+	// 协程启动 Kafka Consumer
+	go kh.Linster([]string{JobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
 
-func send() {
-	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).Send("cjob-test", PhModel.JobRequest{}.GenTestData())
-	bmerror.PanicError(err)
-}
+	/// 下面不用管，网上抄的
+	// 主动关闭服务器
+	addr := ip + ":" + port
+	mux := http.NewServeMux()
+	mux.HandleFunc(prefix, PhHandler.PhHttpHandler(kh, mh))
 
-func linster() {
-	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).
-		Linster([]string{"cjob-test2"}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler)
-	bmerror.PanicError(err)
-}
+	// 一个通知退出的chan
+	var server *http.Server
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	server = &http.Server{
+		Addr:         addr,
+		WriteTimeout: WriteTimeout,
+		Handler:      mux,
+	}
 
-func sendMqtt() {
-	model := PhModel.JobState{}.GenTestData()
-	err := PhMessage.PhMqttHandler{}.New(MqttUrl).Send("test-qi/", model)
-	bmerror.PanicError(err)
+	bmlog.StandardLogger().Info("Starting httpserver in " + port)
+	log.Println("Starting httpserver in " + port)
+	go func() {
+		// 接收退出信号
+		<-quit
+		if err := server.Close(); err != nil {
+			bmlog.StandardLogger().Error("Close server:", err)
+			log.Fatal("Close server:", err)
+		}
+	}()
+
+	err := server.ListenAndServe()
+	if err != nil {
+		// 正常退出
+		if err == http.ErrServerClosed {
+			bmlog.StandardLogger().Error("Server closed under request")
+			log.Fatal("Server closed under request")
+		} else {
+			bmlog.StandardLogger().Error("Server closed unexpected", err)
+			log.Fatal("Server closed unexpected", err)
+		}
+	}
+	bmlog.StandardLogger().Error("Server exited")
+	log.Fatal("Server exited")
 }

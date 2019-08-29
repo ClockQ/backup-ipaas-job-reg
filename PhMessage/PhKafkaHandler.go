@@ -13,18 +13,27 @@ import (
 
 type PhKafkaHandler struct {
 	schemaRepositoryUrl string
+	bkc                 *bmkafka.Config
 }
 
 func (handler PhKafkaHandler) New(srUrl string) *PhKafkaHandler {
-	return &PhKafkaHandler{schemaRepositoryUrl: srUrl}
+	bkc, err := bmkafka.GetConfigInstance()
+	if err != nil {
+		panic(err)
+	}
+
+	return &PhKafkaHandler{
+		schemaRepositoryUrl: srUrl,
+		bkc:                 bkc,
+	}
 }
 
 func (handler PhKafkaHandler) Send(topic string, model PhModel.PhAvroModel) (err error) {
-	log.Printf("Kafka 发送消息 %s 到 %s \n", model, topic)
 	record, err := model.GenSchema(model).GenRecord(model)
 	if err != nil {
 		return
 	}
+	log.Printf("Kafka 发送消息 %s 到 %s \n", record.String(), topic)
 
 	encoder := kafkaAvro.NewKafkaAvroEncoder(handler.schemaRepositoryUrl)
 	recordByteArr, err := encoder.Encode(record)
@@ -32,23 +41,12 @@ func (handler PhKafkaHandler) Send(topic string, model PhModel.PhAvroModel) (err
 		return
 	}
 
-	bkc, err := bmkafka.GetConfigInstance()
-	if err != nil {
-		return
-	}
-
-	bkc.Produce(&topic, recordByteArr)
+	handler.bkc.Produce(&topic, recordByteArr)
 	return
 }
 
-func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{})) error {
-
-	bkc, err := bmkafka.GetConfigInstance()
-	if err != nil {
-		return err
-	}
-
-	bkc.SubscribeTopics(topics, func(receive interface{}) {
+func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{})) {
+	handler.bkc.SubscribeTopics(topics, func(receive interface{}) {
 		decoder := kafkaAvro.NewKafkaAvroDecoder(handler.schemaRepositoryUrl)
 		record, err := decoder.Decode(receive.([]byte))
 		if err != nil {
@@ -66,9 +64,7 @@ func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, sub
 			return
 		}
 
-		log.Printf("Kafka 接受从 %s 来的消息 %s \n", topics, msgModel)
+		log.Printf("Kafka 接受从 %s 来的消息 %#v \n", topics, msgModel)
 		subscribeFunc(msgModel)
 	})
-
-	return nil
 }

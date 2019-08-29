@@ -10,19 +10,25 @@ import (
 )
 
 type PhMqttHandler struct {
-	Url string
+	Url     string
+	Channel string
 }
 
-func (handler PhMqttHandler) New(url string) *PhMqttHandler {
-	return &PhMqttHandler{Url: url}
+func (handler PhMqttHandler) New(url, channel string) *PhMqttHandler {
+	return &PhMqttHandler{Url: url, Channel: channel}
 }
 
-func (handler *PhMqttHandler) Send(channel string, model PhModel.PhMessageModel) (err error) {
-	log.Printf("MQTT 发送消息 %s 到 %s \n", model, channel)
+func (handler *PhMqttHandler) SetChannel(url string) *PhMqttHandler {
+	handler.Url = url
+	return handler
+}
+
+func (handler *PhMqttHandler) Send(model PhModel.PhMessageModel) (err error) {
+	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.Channel)
 
 	header := make(map[string]string)
 	header["method"] = "Publish"
-	header["channel"] = channel
+	header["channel"] = handler.Channel
 	header["topic"] = ""
 
 	body := make(map[string]interface{})
