@@ -14,6 +14,7 @@ type PhSchemaModel struct {
 func (model *PhSchemaModel) GenSchema(data interface{}) *PhSchemaModel {
 	schemaMap := make(map[string]interface{})
 	schemaMap["type"] = "record"
+	schemaMap["namespace"] = "com.pharbers.kafka.schema"
 
 	schemaName := reflect.TypeOf(data).Elem().Name()
 	schemaMap["name"] = schemaName
