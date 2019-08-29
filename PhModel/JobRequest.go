@@ -1,4 +1,4 @@
-package PhSchemaModel
+package PhModel
 
 type JobRequest struct {
 	*PhSchemaModel

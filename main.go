@@ -1,14 +1,19 @@
 package main
 
 import (
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhSchemaModel"
+	"bytes"
+	"fmt"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMessage"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/alfredyang1986/blackmirror/bmerror"
-	"github.com/alfredyang1986/blackmirror/bmkafka"
-	kafkaAvro "github.com/elodina/go-kafka-avro"
+	"io/ioutil"
+	"net/http"
 	"os"
 )
 
 const (
+	LogPath             = "dl.log"
 	KafkabRokerUrl      = "123.56.179.133:9092"
 	SchemaRepositoryUrl = "http://123.56.179.133:8081"
 	KafkaGroup          = "test20190828"
@@ -19,6 +24,7 @@ const (
 )
 
 func main() {
+	_ = os.Setenv("LOG_PATH", LogPath)
 	_ = os.Setenv("BM_KAFKA_BROKER", KafkabRokerUrl)
 	_ = os.Setenv("BM_KAFKA_SCHEMA_REGISTRY_URL", SchemaRepositoryUrl)
 	_ = os.Setenv("BM_KAFKA_CONSUMER_GROUP", KafkaGroup)
@@ -27,16 +33,50 @@ func main() {
 	_ = os.Setenv("BM_KAFKA_SSL_KEY_LOCATION", SSLKeyLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
 
-	model := PhSchemaModel.JobResponse{}.GenTestData()
-	record, err := model.GenRecord(&model)
-	bmerror.PanicError(err)
+	//for i := 0; i < 10; i++ {
+	//	send()
+	//}
+	//
+	//linster()
 
-	encoder := kafkaAvro.NewKafkaAvroEncoder(SchemaRepositoryUrl)
-	recordByteArr, err := encoder.Encode(record)
-	bmerror.PanicError(err)
+	sendMqtt()
+}
 
-	bkc, err := bmkafka.GetConfigInstance()
+func send() {
+	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).Send("cjob-test", PhModel.JobRequest{}.GenTestData())
 	bmerror.PanicError(err)
-	topic := "cjob-test"
-	bkc.Produce(&topic, recordByteArr)
+}
+
+func linster() {
+	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).
+		Linster([]string{"cjob-test2"}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler)
+	bmerror.PanicError(err)
+}
+
+func sendMqtt() {
+	url := "http://59.110.31.215:6542/v0/publish"
+
+	var jsonStr = []byte(`{
+	"header": {
+		"method": "Publish",
+		"channel": "test-qi/",
+		"topic": ""
+	},
+	"payload": {
+		"account": "demo",
+		"progress": 10
+	}
+}`)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
 }

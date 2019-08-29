@@ -1,4 +1,4 @@
-package PhSchemaModel
+package PhModel
 
 import (
 	"encoding/json"
