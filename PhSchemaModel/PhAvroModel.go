@@ -6,12 +6,17 @@ import (
 	"reflect"
 )
 
+type PhAvroModel interface {
+	GenSchema(data interface{}) PhAvroModel
+	GenRecord(data interface{}) (record *avro.GenericRecord, err error)
+}
+
 type PhSchemaModel struct {
 	schemaString string
 }
 
 /** 暂不支持嵌套结构 */
-func (model *PhSchemaModel) GenSchema(data interface{}) *PhSchemaModel {
+func (model *PhSchemaModel) GenSchema(data interface{}) PhAvroModel {
 	schemaMap := make(map[string]interface{})
 	schemaMap["type"] = "record"
 	schemaMap["namespace"] = "com.pharbers.kafka.schema"
@@ -22,13 +27,13 @@ func (model *PhSchemaModel) GenSchema(data interface{}) *PhSchemaModel {
 	var fields = make([]map[string]string, 0)
 	v := reflect.ValueOf(data).Elem()
 	for j := 0; j < v.NumField(); j++ {
-		// 跳过结构体类型
-		if v.Field(j).Kind().String() == "struct" {
+		// 跳过指针类型
+		if v.Field(j).Kind().String() == "ptr" {
 			continue
 		}
 		fieldName := v.Type().Field(j).Name
 		fieldType := v.Field(j).Type().Name()
-		fields = append(fields, map[string]string{"name":fieldName, "type":fieldType})
+		fields = append(fields, map[string]string{"name": fieldName, "type": fieldType})
 	}
 	schemaMap["fields"] = fields
 	schemaBytes, _ := json.Marshal(schemaMap)
@@ -51,8 +56,8 @@ func (model *PhSchemaModel) GenRecord(data interface{}) (record *avro.GenericRec
 
 	v := reflect.ValueOf(data).Elem()
 	for j := 0; j < v.NumField(); j++ {
-		// 跳过结构体类型
-		if v.Field(j).Kind().String() == "struct" {
+		// 跳过指针类型
+		if v.Field(j).Kind().String() == "ptr" {
 			continue
 		}
 		fieldName := v.Type().Field(j).Name
