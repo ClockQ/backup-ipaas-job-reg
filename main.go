@@ -1,19 +1,15 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhMessage"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/alfredyang1986/blackmirror/bmerror"
-	"io/ioutil"
-	"net/http"
 	"os"
 )
 
 const (
-	LogPath             = "dl.log"
+	LogPath             = "job_reg.log"
 	KafkabRokerUrl      = "123.56.179.133:9092"
 	SchemaRepositoryUrl = "http://123.56.179.133:8081"
 	KafkaGroup          = "test20190828"
@@ -21,6 +17,7 @@ const (
 	CASignedLocation    = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
 	SSLKeyLocation      = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
 	SSLPwd              = "pharbers"
+	MqttUrl				= "http://59.110.31.215:6542/v0/publish"
 )
 
 func main() {
@@ -33,13 +30,18 @@ func main() {
 	_ = os.Setenv("BM_KAFKA_SSL_KEY_LOCATION", SSLKeyLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
 
-	//for i := 0; i < 10; i++ {
-	//	send()
-	//}
-	//
-	//linster()
+	jobRequest := PhModel.JobRequest{}.GenTestData()
+	err := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).Send("cjob-test", jobRequest)
+	bmerror.PanicError(err)
 
-	sendMqtt()
+	jobResponse := PhModel.JobResponse{}
+	err = PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl).
+		Linster([]string{"cjob-test2"}, &jobResponse, PhHandler.JobResponseHandler)
+	bmerror.PanicError(err)
+
+	model := jobResponse //PhModel.JobState{}.GenTestData()
+	err = PhMessage.PhMqttHandler{}.New(MqttUrl).Send("test-qi/", model)
+	bmerror.PanicError(err)
 }
 
 func send() {
@@ -54,29 +56,7 @@ func linster() {
 }
 
 func sendMqtt() {
-	url := "http://59.110.31.215:6542/v0/publish"
-
-	var jsonStr = []byte(`{
-	"header": {
-		"method": "Publish",
-		"channel": "test-qi/",
-		"topic": ""
-	},
-	"payload": {
-		"account": "demo",
-		"progress": 10
-	}
-}`)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	model := PhModel.JobState{}.GenTestData()
+	err := PhMessage.PhMqttHandler{}.New(MqttUrl).Send("test-qi/", model)
+	bmerror.PanicError(err)
 }

@@ -20,6 +20,7 @@ func (handler PhKafkaHandler) New(srUrl string) *PhKafkaHandler {
 }
 
 func (handler PhKafkaHandler) Send(topic string, model PhModel.PhAvroModel) (err error) {
+	log.Printf("Kafka 发送消息 %s 到 %s \n", model, topic)
 	record, err := model.GenSchema(model).GenRecord(model)
 	if err != nil {
 		return
@@ -51,7 +52,7 @@ func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, sub
 		decoder := kafkaAvro.NewKafkaAvroDecoder(handler.schemaRepositoryUrl)
 		record, err := decoder.Decode(receive.([]byte))
 		if err != nil {
-			errMsg := fmt.Sprintf("接受的 %s 信息解析出错: %s", topics, err)
+			errMsg := fmt.Sprintf("Kafka 接受的 %s 信息解析出错: %s", topics, err)
 			log.Println(errMsg)
 			bmlog.StandardLogger().Error(errMsg)
 			return
@@ -59,12 +60,13 @@ func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, sub
 
 		err = json.Unmarshal([]byte(record.(*avro.GenericRecord).String()), msgModel)
 		if err != nil {
-			errMsg := fmt.Sprintf("接受的 %s 信息解析出错: %s", topics, err)
+			errMsg := fmt.Sprintf("Kafka 接受的 %s 信息解析出错: %s", topics, err)
 			log.Println(errMsg)
 			bmlog.StandardLogger().Error(errMsg)
 			return
 		}
 
+		log.Printf("Kafka 接受从 %s 来的消息 %s \n", topics, msgModel)
 		subscribeFunc(msgModel)
 	})
 

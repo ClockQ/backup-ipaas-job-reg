@@ -1,3 +1,3 @@
 package PhModel
 
-type PhMessageModel interface {}
+type PhMessageModel interface{}
