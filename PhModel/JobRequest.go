@@ -46,7 +46,7 @@ func (model JobRequest) GenTMData() *JobRequest {
 	model.NumExecutors = "2"
 	model.Queue = "researches"
 	model.Target = "hdfs:///jars/context/NTMR/TMUCBCalMain.R"
-	model.Files = "hdfs:///jars/context/pharbers_config/kafka_config.xml,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.truststore.jks,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.keystore.jks"
+	model.Files = "hdfs:///jars/context/NTMR/AddCols.R,hdfs:///jars/context/NTMR/CastCol2Double.R,hdfs:///jars/context/NTMR/ColMin.R,hdfs:///jars/context/NTMR/ColMax.R,hdfs:///jars/context/NTMR/ColRename.R,hdfs:///jars/context/NTMR/ColSum.R,hdfs:///jars/context/NTMR/CurveFunc.R,hdfs:///jars/context/NTMR/UCBDataBinding.R,hdfs:///jars/context/NTMR/TMCalCurveSkeleton2.R,hdfs:///jars/context/NTMR/UCBCalFuncs.R,hdfs:///jars/context/NTMR/TMCalResAchv.R"
 	model.Parameters = "hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/cal_data hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/weightages hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/curves-n hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/competitor"
 	return &model
 }
