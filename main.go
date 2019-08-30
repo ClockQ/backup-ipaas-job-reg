@@ -29,6 +29,10 @@ func setEnv() {
 		MqttUrl     = "http://59.110.31.215:6542/v0/publish"
 		MqttChannel = "test-qi/"
 
+		RedisHost = "59.110.31.215"
+		RedisPort = "6378"
+		RedisPwd  = ""
+
 		KafkabRokerUrl      = "123.56.179.133:9092"
 		SchemaRepositoryUrl = "http://123.56.179.133:8081"
 		KafkaGroup          = "test20190828"
@@ -52,6 +56,10 @@ func setEnv() {
 	_ = os.Setenv("MQTT_URL", MqttUrl)
 	_ = os.Setenv("MQTT_CHANNEL", MqttChannel)
 
+	_ = os.Setenv("REDIS_HOST", RedisHost)
+	_ = os.Setenv("REDIS_PORT", RedisPort)
+	_ = os.Setenv("REDIS_PWD", RedisPwd)
+
 	_ = os.Setenv("BM_KAFKA_BROKER", KafkabRokerUrl)
 	_ = os.Setenv("BM_KAFKA_SCHEMA_REGISTRY_URL", SchemaRepositoryUrl)
 	_ = os.Setenv("BM_KAFKA_CONSUMER_GROUP", KafkaGroup)
@@ -73,12 +81,16 @@ func main() {
 	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
 	connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
 
+	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
 	mqttUrl := os.Getenv("MQTT_URL")
 	mqttChannel := os.Getenv("MQTT_CHANNEL")
-	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+	redisPwd := os.Getenv("REDIS_PWD")
 
 	kh := PhHelper.PhKafkaHelper{}.New(schemaRepositoryUrl)
 	mh := PhHelper.PhMqttHelper{}.New(mqttUrl, mqttChannel)
+	rh := PhHelper.PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 
 	// 协程启动 Kafka Consumer
 	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
@@ -88,7 +100,7 @@ func main() {
 	// 主动关闭服务器
 	addr := ip + ":" + port
 	mux := http.NewServeMux()
-	mux.HandleFunc(prefix, PhHandler.PhHttpHandler(kh, mh))
+	mux.HandleFunc(prefix, PhHandler.PhHttpHandler(kh, mh, rh))
 
 	// 一个通知退出的chan
 	var server *http.Server

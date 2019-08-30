@@ -9,7 +9,10 @@ import (
 	"net/http"
 )
 
-func PhHttpHandler(kh *PhHelper.PhKafkaHelper, mh *PhHelper.PhMqttHelper) (_ func(http.ResponseWriter, *http.Request)) {
+func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
+	mh *PhHelper.PhMqttHelper,
+	rh *PhHelper.PhRedisHelper) (_ func(http.ResponseWriter, *http.Request)) {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		var response []byte
 
@@ -22,7 +25,7 @@ func PhHttpHandler(kh *PhHelper.PhKafkaHelper, mh *PhHelper.PhMqttHelper) (_ fun
 				response = []byte("Param Parse Error: " + err.Error())
 			}
 
-			err = PhJobReg.PhJobReg(model, kh, mh)
+			err = PhJobReg.PhJobReg(model, kh, mh, rh)
 			if err != nil {
 				response = []byte("Job Reg Error: " + err.Error())
 			}

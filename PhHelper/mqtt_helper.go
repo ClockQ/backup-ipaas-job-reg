@@ -10,25 +10,25 @@ import (
 )
 
 type PhMqttHelper struct {
-	Url     string
-	Channel string
+	url     string
+	channel string
 }
 
 func (handler PhMqttHelper) New(url, channel string) *PhMqttHelper {
-	return &PhMqttHelper{Url: url, Channel: channel}
+	return &PhMqttHelper{url: url, channel: channel}
 }
 
 func (handler *PhMqttHelper) SetChannel(url string) *PhMqttHelper {
-	handler.Url = url
+	handler.url = url
 	return handler
 }
 
 func (handler *PhMqttHelper) Send(model PhModel.PhMessageModel) (err error) {
-	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.Channel)
+	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.channel)
 
 	header := make(map[string]string)
 	header["method"] = "Publish"
-	header["channel"] = handler.Channel
+	header["channel"] = handler.channel
 	header["topic"] = ""
 
 	body := make(map[string]interface{})
@@ -40,7 +40,7 @@ func (handler *PhMqttHelper) Send(model PhModel.PhMessageModel) (err error) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", handler.Url, bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequest("POST", handler.url, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return
 	}
