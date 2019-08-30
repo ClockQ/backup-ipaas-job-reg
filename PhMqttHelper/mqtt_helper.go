@@ -1,4 +1,4 @@
-package PhHelper
+package PhMqttHelper
 
 import (
 	"bytes"

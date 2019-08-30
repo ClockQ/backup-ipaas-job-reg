@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/hashicorp/go-uuid"
 	. "github.com/smartystreets/goconvey/convey"
 	"strconv"
@@ -21,7 +22,7 @@ const (
 
 func TestPhJobReg(t *testing.T) {
 	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
-	mh := PhHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
+	mh := PhMqttHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
 	rh := PhHelper.PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
 
 	Convey("测试 TM JobReg", t, func() {

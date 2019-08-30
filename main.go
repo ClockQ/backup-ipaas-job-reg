@@ -4,6 +4,7 @@ import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/alfredyang1986/blackmirror/bmlog"
 	"log"
 	"net/http"
@@ -89,7 +90,7 @@ func main() {
 	redisPwd := os.Getenv("REDIS_PWD")
 
 	kh := PhHelper.PhKafkaHelper{}.New(schemaRepositoryUrl)
-	mh := PhHelper.PhMqttHelper{}.New(mqttUrl, mqttChannel)
+	mh := PhMqttHelper.PhMqttHelper{}.New(mqttUrl, mqttChannel)
 	rh := PhHelper.PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 
 	// 协程启动 Kafka Consumer

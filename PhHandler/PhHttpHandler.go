@@ -5,12 +5,13 @@ import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobManager"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"io/ioutil"
 	"net/http"
 )
 
 func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
-	mh *PhHelper.PhMqttHelper,
+	mh *PhMqttHelper.PhMqttHelper,
 	rh *PhHelper.PhRedisHelper) (_ func(http.ResponseWriter, *http.Request)) {
 
 	return func(w http.ResponseWriter, r *http.Request) {

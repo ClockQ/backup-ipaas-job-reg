@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"time"
 )
 
 func PhJobReg(model PhModel.JobReg,
 	_ *PhHelper.PhKafkaHelper,
-	_ *PhHelper.PhMqttHelper,
+	_ *PhMqttHelper.PhMqttHelper,
 	rh *PhHelper.PhRedisHelper) (err error) {
 
 	jobId := model.JobId

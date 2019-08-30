@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhPanic"
 	"github.com/alfredyang1986/blackmirror/bmkafka"
 	"github.com/alfredyang1986/blackmirror/bmlog"
@@ -47,7 +48,7 @@ func (handler PhKafkaHelper) Send(topic string, model PhModel.PhAvroModel) (err 
 	return
 }
 
-func (handler PhKafkaHelper) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{}), mh *PhMqttHelper) {
+func (handler PhKafkaHelper) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{}), mh *PhMqttHelper.PhMqttHelper) {
 	handler.bkc.SubscribeTopics(topics, func(receive interface{}) {
 		decoder := kafkaAvro.NewKafkaAvroDecoder(handler.schemaRepositoryUrl)
 		record, err := decoder.Decode(receive.([]byte))

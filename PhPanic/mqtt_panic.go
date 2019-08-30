@@ -2,14 +2,14 @@ package PhPanic
 
 import (
 	"fmt"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/alfredyang1986/blackmirror/bmlog"
 	"log"
 	"os"
 	"strconv"
 )
 
-func MqttPanicError(err error, mh *PhHelper.PhMqttHelper) {
+func MqttPanicError(err error, mh *PhMqttHelper.PhMqttHelper) {
 	isTest, _ := strconv.ParseBool(os.Getenv("IS_TEST"))
 
 	if err != nil {
