@@ -29,6 +29,7 @@ require (
 	github.com/alfredyang1986/blackmirror v0.1.1
 	github.com/elodina/go-avro v0.0.0-20160406082632-0c8185d9a3ba
 	github.com/elodina/go-kafka-avro v0.0.0-20160422130714-ab6b1d1c9a23
+	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
 )

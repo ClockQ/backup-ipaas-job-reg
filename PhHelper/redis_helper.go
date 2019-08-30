@@ -9,7 +9,7 @@ type PhRedisHelper struct {
 	password string
 }
 
-func (helper *PhRedisHelper) New(host, port, pwd string) *PhRedisHelper {
+func (helper PhRedisHelper) New(host, port, pwd string) *PhRedisHelper {
 	helper.host = host
 	helper.port = port
 	helper.password = pwd
@@ -20,5 +20,5 @@ func (helper *PhRedisHelper) New(host, port, pwd string) *PhRedisHelper {
 	})
 	helper.Redis = client
 
-	return helper
+	return &helper
 }

@@ -2,8 +2,8 @@ package PhHandler
 
 import (
 	"encoding/json"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobReg"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobManager"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"io/ioutil"
 	"net/http"
@@ -25,9 +25,16 @@ func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
 				response = []byte("Param Parse Error: " + err.Error())
 			}
 
-			err = PhJobReg.PhJobReg(model, kh, mh, rh)
+			// 进行 Job 注册
+			err = PhJobManager.PhJobReg(model, kh, mh, rh)
 			if err != nil {
 				response = []byte("Job Reg Error: " + err.Error())
+			}
+
+			// 执行 Job
+			err = PhJobManager.PhJobExec(model.JobId, kh, mh, rh)
+			if err != nil {
+				response = []byte("Job Exec Error: " + err.Error())
 			}
 
 			response = []byte("The Call Is Successful")
