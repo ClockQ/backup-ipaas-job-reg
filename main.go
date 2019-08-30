@@ -9,34 +9,49 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 )
 
-// TODO 统统环境变量
-var ip = ""
-var port = "9213"
-var prefix = "/v1.0/job_reg"
-var WriteTimeout = time.Second * 4
+func setEnv() {
+	const (
+		Ip           = ""
+		Port         = "9213"
+		Prefix       = "/v1.0/job_reg"
+		LogPath      = "job_reg.log"
+		WriteTimeout = "4"
 
-const (
-	LogPath              = "job_reg.log"
-	KafkabRokerUrl       = "123.56.179.133:9092"
-	SchemaRepositoryUrl  = "http://123.56.179.133:8081"
-	KafkaGroup           = "test20190828"
-	CaLocation           = "/opt/kafka/pharbers-secrets/snakeoil-ca-1.crt"
-	CASignedLocation     = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
-	SSLKeyLocation       = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
-	SSLPwd               = "pharbers"
-	JobRequestTopic      = "cjob-test"
-	JobResponseTopic     = "cjob-test2"
-	ConnectRequestTopic  = "ConnectRequest"
-	ConnectResponseTopic = "ConnectResponse"
-	MqttUrl              = "http://59.110.31.215:6542/v0/publish"
-	MqttChannel          = "test-qi/"
-)
+		JobRequestTopic      = "cjob-test"
+		JobResponseTopic     = "cjob-test2"
+		ConnectRequestTopic  = "ConnectRequest"
+		ConnectResponseTopic = "ConnectResponse"
 
-func main() {
+		MqttUrl     = "http://59.110.31.215:6542/v0/publish"
+		MqttChannel = "test-qi/"
+
+		KafkabRokerUrl      = "123.56.179.133:9092"
+		SchemaRepositoryUrl = "http://123.56.179.133:8081"
+		KafkaGroup          = "test20190828"
+		CaLocation          = "/opt/kafka/pharbers-secrets/snakeoil-ca-1.crt"
+		CASignedLocation    = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
+		SSLKeyLocation      = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
+		SSLPwd              = "pharbers"
+	)
+
+	_ = os.Setenv("IP", Ip)
+	_ = os.Setenv("PORT", Port)
+	_ = os.Setenv("PREFIX", Prefix)
 	_ = os.Setenv("LOG_PATH", LogPath)
+	_ = os.Setenv("WRITE_TIMEOUT", WriteTimeout)
+
+	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
+	_ = os.Setenv("JOB_RESPONSE_TOPIC", JobResponseTopic)
+	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
+	_ = os.Setenv("CONNECT_RESPONSE_TOPIC", ConnectResponseTopic)
+
+	_ = os.Setenv("MQTT_URL", MqttUrl)
+	_ = os.Setenv("MQTT_CHANNEL", MqttChannel)
+
 	_ = os.Setenv("BM_KAFKA_BROKER", KafkabRokerUrl)
 	_ = os.Setenv("BM_KAFKA_SCHEMA_REGISTRY_URL", SchemaRepositoryUrl)
 	_ = os.Setenv("BM_KAFKA_CONSUMER_GROUP", KafkaGroup)
@@ -44,25 +59,30 @@ func main() {
 	_ = os.Setenv("BM_KAFKA_CA_SIGNED_LOCATION", CASignedLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_KEY_LOCATION", SSLKeyLocation)
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
-	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
-	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
+}
 
-	if ok := os.Getenv("REG_PORT"); ok != "" {
-		port = ok
-	}
-	if ok := os.Getenv("REG_PREFIX"); ok != "" {
-		prefix = ok
-	}
-	if ok := os.Getenv("LOG_PATH"); ok == "" {
-		_ = os.Setenv("LOG_PATH", LogPath)
-	}
+func main() {
+	setEnv()
 
-	mh := PhMessage.PhMqttHandler{}.New(MqttUrl, MqttChannel)
-	kh := PhMessage.PhKafkaHandler{}.New(SchemaRepositoryUrl)
+	ip := os.Getenv("IP")
+	port := os.Getenv("PORT")
+	prefix := os.Getenv("PREFIX")
+	writeTimeoutInt, _ := strconv.Atoi(os.Getenv("JOB_REQUEST_TOPIC"))
+	writeTimeout := time.Second * time.Duration(writeTimeoutInt)
+
+	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
+	connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
+
+	mqttUrl := os.Getenv("MQTT_URL")
+	mqttChannel := os.Getenv("MQTT_CHANNEL")
+	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
+
+	mh := PhMessage.PhMqttHandler{}.New(mqttUrl, mqttChannel)
+	kh := PhMessage.PhKafkaHandler{}.New(schemaRepositoryUrl)
 
 	// 协程启动 Kafka Consumer
-	go kh.Linster([]string{JobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
-	go kh.Linster([]string{ConnectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(mh))
+	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
+	go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(mh))
 
 	/// 下面不用管，网上抄的
 	// 主动关闭服务器
@@ -76,7 +96,7 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 	server = &http.Server{
 		Addr:         addr,
-		WriteTimeout: WriteTimeout,
+		WriteTimeout: writeTimeout,
 		Handler:      mux,
 	}
 
