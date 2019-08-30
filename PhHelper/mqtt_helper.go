@@ -1,4 +1,4 @@
-package PhMessage
+package PhHelper
 
 import (
 	"bytes"
@@ -9,21 +9,21 @@ import (
 	"net/http"
 )
 
-type PhMqttHandler struct {
+type PhMqttHelper struct {
 	Url     string
 	Channel string
 }
 
-func (handler PhMqttHandler) New(url, channel string) *PhMqttHandler {
-	return &PhMqttHandler{Url: url, Channel: channel}
+func (handler PhMqttHelper) New(url, channel string) *PhMqttHelper {
+	return &PhMqttHelper{Url: url, Channel: channel}
 }
 
-func (handler *PhMqttHandler) SetChannel(url string) *PhMqttHandler {
+func (handler *PhMqttHelper) SetChannel(url string) *PhMqttHelper {
 	handler.Url = url
 	return handler
 }
 
-func (handler *PhMqttHandler) Send(model PhModel.PhMessageModel) (err error) {
+func (handler *PhMqttHelper) Send(model PhModel.PhMessageModel) (err error) {
 	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.Channel)
 
 	header := make(map[string]string)

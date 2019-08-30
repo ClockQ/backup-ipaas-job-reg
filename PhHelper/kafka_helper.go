@@ -1,4 +1,4 @@
-package PhMessage
+package PhHelper
 
 import (
 	"encoding/json"
@@ -11,24 +11,24 @@ import (
 	"log"
 )
 
-type PhKafkaHandler struct {
+type PhKafkaHelper struct {
 	schemaRepositoryUrl string
 	bkc                 *bmkafka.Config
 }
 
-func (handler PhKafkaHandler) New(srUrl string) *PhKafkaHandler {
+func (handler PhKafkaHelper) New(srUrl string) *PhKafkaHelper {
 	bkc, err := bmkafka.GetConfigInstance()
 	if err != nil {
 		panic(err)
 	}
 
-	return &PhKafkaHandler{
+	return &PhKafkaHelper{
 		schemaRepositoryUrl: srUrl,
 		bkc:                 bkc,
 	}
 }
 
-func (handler PhKafkaHandler) Send(topic string, model PhModel.PhAvroModel) (err error) {
+func (handler PhKafkaHelper) Send(topic string, model PhModel.PhAvroModel) (err error) {
 	record, err := model.GenSchema(model).GenRecord(model)
 	if err != nil {
 		return
@@ -45,7 +45,7 @@ func (handler PhKafkaHandler) Send(topic string, model PhModel.PhAvroModel) (err
 	return
 }
 
-func (handler PhKafkaHandler) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{})) {
+func (handler PhKafkaHelper) Linster(topics []string, msgModel interface{}, subscribeFunc func(receive interface{})) {
 	handler.bkc.SubscribeTopics(topics, func(receive interface{}) {
 		decoder := kafkaAvro.NewKafkaAvroDecoder(handler.schemaRepositoryUrl)
 		record, err := decoder.Decode(receive.([]byte))

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhMessage"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/alfredyang1986/blackmirror/bmlog"
 	"log"
@@ -77,8 +77,8 @@ func main() {
 	mqttChannel := os.Getenv("MQTT_CHANNEL")
 	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
 
-	mh := PhMessage.PhMqttHandler{}.New(mqttUrl, mqttChannel)
-	kh := PhMessage.PhKafkaHandler{}.New(schemaRepositoryUrl)
+	kh := PhHelper.PhKafkaHelper{}.New(schemaRepositoryUrl)
+	mh := PhHelper.PhMqttHelper{}.New(mqttUrl, mqttChannel)
 
 	// 协程启动 Kafka Consumer
 	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))

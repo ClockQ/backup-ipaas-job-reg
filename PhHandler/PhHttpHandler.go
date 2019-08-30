@@ -3,13 +3,13 @@ package PhHandler
 import (
 	"encoding/json"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobReg"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhMessage"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"io/ioutil"
 	"net/http"
 )
 
-func PhHttpHandler(kh *PhMessage.PhKafkaHandler, mh *PhMessage.PhMqttHandler) (_ func(http.ResponseWriter, *http.Request)) {
+func PhHttpHandler(kh *PhHelper.PhKafkaHelper, mh *PhHelper.PhMqttHelper) (_ func(http.ResponseWriter, *http.Request)) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var response []byte
 
