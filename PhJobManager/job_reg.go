@@ -2,6 +2,7 @@ package PhJobManager
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"time"
@@ -30,7 +31,7 @@ func PhJobReg(model PhModel.JobReg,
 			return err
 		}
 
-		err = rh.Redis.HSet(jobId, "step_"+string(i), value).Err()
+		err = rh.Redis.HSet(jobId, fmt.Sprintf("step_%d", i), value).Err()
 		if err != nil {
 			return err
 		}

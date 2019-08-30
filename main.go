@@ -93,8 +93,8 @@ func main() {
 	rh := PhHelper.PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 
 	// 协程启动 Kafka Consumer
-	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh))
-	go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(mh))
+	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(mh), mh)
+	go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(mh), mh)
 
 	/// 下面不用管，网上抄的
 	// 主动关闭服务器

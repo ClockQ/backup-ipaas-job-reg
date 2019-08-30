@@ -3,5 +3,10 @@ package PhModel
 type JobReg struct {
 	Id      string
 	JobId   string
-	Process []interface{}
+	Process []JobProcess
+}
+
+type JobProcess struct {
+	PsType string
+	test   string
 }

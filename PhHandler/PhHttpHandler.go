@@ -23,19 +23,18 @@ func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
 			err = json.Unmarshal(body, &model)
 			if err != nil {
 				response = []byte("Param Parse Error: " + err.Error())
+				break
 			}
 
 			// 进行 Job 注册
 			err = PhJobManager.PhJobReg(model, kh, mh, rh)
 			if err != nil {
 				response = []byte("Job Reg Error: " + err.Error())
+				break
 			}
 
-			// 执行 Job
-			err = PhJobManager.PhJobExec(model.JobId, kh, mh, rh)
-			if err != nil {
-				response = []byte("Job Exec Error: " + err.Error())
-			}
+			// 协程开始执行 Job
+			go PhJobManager.PhJobExec(model.JobId, kh, mh, rh)
 
 			response = []byte("The Call Is Successful")
 		default:
