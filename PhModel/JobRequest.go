@@ -37,7 +37,7 @@ func (model JobRequest) GenTestData() *JobRequest {
 // TODO: 注意删除
 func (model JobRequest) GenTMData() *JobRequest {
 	model.PhSchemaModel = &PhSchemaModel{}
-	model.Name = "TM Calc"
+	model.Name = "TmCalc"
 	model.JobType = "R"
 	model.Master = "yarn"
 	model.DeployMode = "cluster"
