@@ -35,7 +35,7 @@ func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
 			}
 
 			// 协程开始执行 Job
-			go PhJobManager.PhJobExec(model.JobId, kh, mh, rh)
+			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 
 			response = []byte("The Call Is Successful")
 		default:

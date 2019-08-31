@@ -7,13 +7,12 @@ import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhPanic"
-	"github.com/mitchellh/mapstructure"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func PhJobExec(jobId string,
+func JobExec(jobId string,
 	kh *PhHelper.PhKafkaHelper,
 	mh *PhMqttHelper.PhMqttHelper,
 	rh *PhHelper.PhRedisHelper) {
@@ -23,7 +22,6 @@ func PhJobExec(jobId string,
 		PhPanic.MqttPanicError(err, mh)
 		return
 	}
-
 	tStep, err := strconv.Atoi(tStepStr)
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
@@ -41,6 +39,11 @@ func PhJobExec(jobId string,
 		return
 	}
 
+	if tStep == cStep {
+		_ = mh.Send(fmt.Sprintf("%s 执行完成", jobId))
+		return
+	}
+
 	stepStr, err := rh.Redis.HGet(jobId, fmt.Sprintf("step_%d", cStep)).Result()
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
@@ -54,31 +57,20 @@ func PhJobExec(jobId string,
 		return
 	}
 
-	err = ProcessExec(jobId, &process, kh)
+	err = ProcessExec(&process, kh)
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
 		return
-	}
-
-	// todo 回调时执行
-	err = rh.Redis.HSet(jobId, "c_step", cStep+1).Err()
-	if err != nil {
-		PhPanic.MqttPanicError(err, mh)
-		return
-	}
-
-	if tStep == cStep+1 {
-		_ = mh.Send(fmt.Sprintf("%s 执行完成", jobId))
 	}
 }
 
-func ProcessExec(jobId string, process *PhModel.JobProcess, kh *PhHelper.PhKafkaHelper) (err error) {
+func ProcessExec(process *PhModel.JobProcess, kh *PhHelper.PhKafkaHelper) (err error) {
 	switch strings.ToUpper(process.PsType) {
 	case "CHANNEL":
 		connectRequestTopic := os.Getenv("CONNECT_REQUEST_TOPIC")
 		connectRequest := PhModel.ConnectRequest{}.New()
 
-		err = mapstructure.Decode(process.JobConfig, connectRequest)
+		err = connectRequest.Inject(process.JobConfig)
 		if err != nil {
 			return
 		}
@@ -91,7 +83,7 @@ func ProcessExec(jobId string, process *PhModel.JobProcess, kh *PhHelper.PhKafka
 		jobRequestTopic := os.Getenv("JOB_REQUEST_TOPIC")
 		jobRequest := PhModel.JobRequest{}.New()
 
-		err = mapstructure.Decode(process.JobConfig, jobRequest)
+		err = jobRequest.Inject(process.JobConfig)
 		if err != nil {
 			return
 		}
@@ -103,4 +95,8 @@ func ProcessExec(jobId string, process *PhModel.JobProcess, kh *PhHelper.PhKafka
 	}
 
 	return
+}
+
+func ProcessStatus() (err error) {
+	return nil
 }

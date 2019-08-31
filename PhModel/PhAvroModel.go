@@ -9,6 +9,7 @@ import (
 type PhAvroModel interface {
 	GenSchema(data interface{}) PhAvroModel
 	GenRecord(data interface{}) (record *avro.GenericRecord, err error)
+	Inject(data map[string]interface{}) error
 }
 
 type PhSchemaModel struct {
@@ -65,4 +66,8 @@ func (model *PhSchemaModel) GenRecord(data interface{}) (record *avro.GenericRec
 	}
 
 	return
+}
+
+func (model *PhSchemaModel) Inject(data map[string]interface{}) error {
+	return nil
 }

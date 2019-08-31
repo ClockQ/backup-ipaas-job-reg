@@ -3,19 +3,10 @@ package PhJobManager
 import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
 	"github.com/hashicorp/go-uuid"
 	. "github.com/smartystreets/goconvey/convey"
 	"os"
-	"strconv"
 	"testing"
-)
-
-const (
-	JobRequestTopic      = "cjob-test"
-	JobResponseTopic     = "cjob-test2"
-	ConnectRequestTopic  = "ConnectRequest"
-	ConnectResponseTopic = "ConnectResponse"
 )
 
 func setEnv() {
@@ -47,6 +38,7 @@ func setEnv() {
 		SSLPwd              = "pharbers"
 	)
 
+	_ = os.Setenv("IS_TEST", "true")
 	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
 	_ = os.Setenv("JOB_RESPONSE_TOPIC", JobResponseTopic)
 	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
@@ -68,18 +60,165 @@ func setEnv() {
 	_ = os.Setenv("BM_KAFKA_SSL_PASS", SSLPwd)
 }
 
-func TestPhJobExec_Channel(t *testing.T) {
-	_ = os.Setenv("IS_TEST", "true")
-	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
-	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
+//// TODO: 注意删除
+//func (model JobRequest) GenTestData() *JobRequest {
+//	model.PhSchemaModel = &PhSchemaModel{}
+//	model.Name = "TestJob"
+//	model.JobType = "Jar"
+//	model.Class = "com.pharbers.ipaas.data.driver.Main"
+//	model.Master = "yarn"
+//	model.DeployMode = "cluster"
+//	model.ExecutorMemory = "1G"
+//	model.ExecutorCores = "1"
+//	model.NumExecutors = "2"
+//	model.Queue = "default"
+//	model.Target = "hdfs:///jars/context/job-context.jar"
+//	model.Files = "hdfs:///jars/context/pharbers_config/kafka_config.xml,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.truststore.jks,hdfs:///jars/context/pharbers_config/secrets/kafka.broker1.keystore.jks"
+//	model.Parameters = "yaml hdfs hdfs:///test/MZclean.yaml"
+//	return &model
+//}
+//
+//// TODO: 注意删除
+//func (model JobRequest) GenTMData() *JobRequest {
+//	model.PhSchemaModel = &PhSchemaModel{}
+//	model.Name = "TmCalc"
+//	model.JobType = "R"
+//	model.Master = "yarn"
+//	model.DeployMode = "cluster"
+//	model.ExecutorMemory = "1G"
+//	model.ExecutorCores = "1"
+//	model.NumExecutors = "2"
+//	model.Queue = "researches"
+//	model.Target = "hdfs:///jars/context/NTMR/TMUCBCalMain.R"
+//	model.Files = "hdfs:///jars/context/NTMR/AddCols.R,hdfs:///jars/context/NTMR/CastCol2Double.R,hdfs:///jars/context/NTMR/ColMin.R,hdfs:///jars/context/NTMR/ColMax.R,hdfs:///jars/context/NTMR/ColRename.R,hdfs:///jars/context/NTMR/ColSum.R,hdfs:///jars/context/NTMR/CurveFunc.R,hdfs:///jars/context/NTMR/UCBDataBinding.R,hdfs:///jars/context/NTMR/TMCalCurveSkeleton2.R,hdfs:///jars/context/NTMR/UCBCalFuncs.R,hdfs:///jars/context/NTMR/TMCalResAchv.R"
+//	model.Parameters = "hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/cal_data hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/weightages hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/curves-n hdfs://192.168.100.137:9000//test/UCBTest/inputParquet/TMInputParquet0820/competitor"
+//	return &model
+//}
+
+//
+//// TODO: 注意删除
+//func (model ConnectRequest) GenTestData(jobId string) *ConnectRequest {
+//	model.PhSchemaModel = &PhSchemaModel{}
+//	model.JobId = jobId
+//	model.Tag = "TM"
+//	sourceConfigBytes, _ := json.Marshal(SourceConfig{}.GenTMSourceMongoData(jobId))
+//	model.SourceConfig = string(sourceConfigBytes)
+//	sinkConfigBytes, _ := json.Marshal(SinkConfig{}.GenTestData(jobId))
+//	model.SinkConfig = string(sinkConfigBytes)
+//	return &model
+//}
+//
+//// TODO: 注意删除
+//func (model SourceConfig) GenTMSourceMongoData(jobId string) SourceConfig {
+//	model["connector.class"] = "com.pharbers.kafka.connect.mongodb.MongodbSourceConnector"
+//	model["tasks.max"] = "1"
+//	model["job"] = jobId
+//	model["topic"] = jobId
+//	model["connection"] = "mongodb://192.168.100.176:27017"
+//	model["database"] = "test"
+//	model["collection"] = "PhAuth"
+//	model["filter"] = "{}"
+//	return model
+//}
+//
+//// TODO: 注意删除
+//func (model SinkConfig) GenTestData(jobId string) SinkConfig {
+//	model["connector.class"] = "com.pharbers.kafka.connect.elasticsearch.ElasticsearchSinkConnector"
+//	model["tasks.max"] = "1"
+//	model["jobId"] = jobId
+//	model["topics"] = jobId
+//	model["key.ignore"] = "true"
+//	model["connection.url"] = "http://59.110.31.215:9200"
+//	model["type.name"] = ""
+//	model["read.timeout.ms"] = "10000"
+//	model["connection.timeout.ms"] = "5000"
+//	return model
+//}
+//
+//// TODO: 注意删除
+//func (model ConnectRequest) GenTMHDFS2MongoData() *ConnectRequest {
+//	model.PhSchemaModel = &PhSchemaModel{}
+//	model.JobId = "abc0000010"
+//	model.Tag = "TM"
+//	sourceConfigBytes, _ := json.Marshal(SourceConfig{}.GenTMSourceHdfsData())
+//	model.SourceConfig = string(sourceConfigBytes)
+//	sinkConfigBytes, _ := json.Marshal(SinkConfig{}.GenTM2MongoData())
+//	model.SinkConfig = string(sinkConfigBytes)
+//	return &model
+//}
+//
+//// TODO: 注意删除
+//func (model SourceConfig) GenTMSourceHdfsData() SourceConfig {
+//	model["connector.class"] = "com.github.mmolimar.kafka.connect.fs.FsSourceConnector"
+//	model["tasks.max"] = "1"
+//
+//	model["jobId"] = "abc0000010"
+//	model["topic"] = "abc0000010"
+//	model["fs.uris"] = "hdfs://192.168.100.137:9000/test/UCBTest/inputParquet/TMInputParquet0820/output/264e12ff-62a5-4cdf-bec5-2eb2014f6154/cal_report/"
+//
+//	model["file_reader.class"] = "com.github.mmolimar.kafka.connect.fs.file.reader.ParquetFileReader"
+//	model["policy.class"] = "com.github.mmolimar.kafka.connect.fs.policy.SimplePolicy"
+//	model["policy.recursive"] = "true"
+//	model["policy.regexp"] = ".*"
+//
+//	return model
+//}
+//
+//// TODO: 注意删除
+//func (model SinkConfig) GenTM2MongoData() SinkConfig {
+//	model["connector.class"] = "at.grahsl.kafka.connect.mongodb.MongoDbSinkConnector"
+//	model["tasks.max"] = "1"
+//
+//	model["jobId"] = "abc0000010"
+//	model["topics"] = "abc0000010"
+//	model["mongodb.connection.uri"] = "mongodb://192.168.100.176:27017/job_reg_test?w=1&journal=true"
+//	model["mongodb.collection"] = "job_reg_cal_report"
+//
+//	model["key.converter"] = "io.confluent.connect.avro.AvroConverter"
+//	model["key.converter.schema.registry.url"] = "http://59.110.31.50:8081"
+//	model["value.converter"] = "io.confluent.connect.avro.AvroConverter"
+//	model["value.converter.schema.registry.url"] = "http://59.110.31.50:8081"
+//	model["connection.timeout.ms"] = "5000"
+//
+//	return model
+//}
+//
+//// TODO: 注意删除
+//func (model ConnectRequest) GenTMMongo2HDFSData(jobId string) *ConnectRequest {
+//	model.PhSchemaModel = &PhSchemaModel{}
+//	model.JobId = jobId
+//	model.Tag = "TM"
+//	sourceConfigBytes, _ := json.Marshal(SourceConfig{}.GenTMSourceMongoData(jobId))
+//	model.SourceConfig = string(sourceConfigBytes)
+//	sinkConfigBytes, _ := json.Marshal(SinkConfig{}.GenTM2HdfsData(jobId))
+//	model.SinkConfig = string(sinkConfigBytes)
+//	return &model
+//}
+//
+//// TODO: 注意删除
+//func (model SinkConfig) GenTM2HdfsData(jobId string) SinkConfig {
+//	model["connector.class"] = "io.confluent.connect.hdfs.HdfsSinkConnector"
+//	model["tasks.max"] = "1"
+//
+//	model["jobId"] = jobId
+//	model["topics"] = jobId
+//	model["hdfs.url"] = "hdfs://192.168.100.137:9000/logs/testqi/parquet/"
+//
+//	model["format.class"] = "io.confluent.connect.hdfs.parquet.ParquetFormat"
+//	model["rotate.interval.ms"] = "1000"
+//	model["flush.size"] = "10"
+//
+//	return model
+//}
+
+func TestProcessExec_Channel(t *testing.T) {
+	setEnv()
 
 	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
-	mh := PhMqttHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
-	rh := PhHelper.PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
 
 	Convey("测试 TM Channel", t, func() {
 		jobId, _ := uuid.GenerateUUID()
-		process := []PhModel.JobProcess{{
+		process := PhModel.JobProcess{
 			PsType: "CHANNEL",
 			JobConfig: map[string]interface{}{
 				"JobId": jobId,
@@ -105,33 +244,22 @@ func TestPhJobExec_Channel(t *testing.T) {
 					"read.timeout.ms":       "10000",
 					"connection.timeout.ms": "5000",
 				},
-			}},
+			},
 		}
-		model := PhModel.JobReg{JobId: jobId, Process: process}
 
-		err := PhJobReg(model, kh, mh, rh)
+		err := ProcessExec(&process, kh)
 		So(err, ShouldBeNil)
-
-		beforeExecStepStr, _ := rh.Redis.HGet(jobId, "c_step").Result()
-		beforeExecStep, _ := strconv.Atoi(beforeExecStepStr)
-		So(beforeExecStep, ShouldEqual, 0)
-
-		PhJobExec(jobId, kh, mh, rh)
-
-		rh.Redis.Del(jobId)
 	})
 }
 
-func TestPhJobExec_Job(t *testing.T) {
+func TestProcessExec_Job(t *testing.T) {
 	setEnv()
 
 	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
-	mh := PhMqttHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
-	rh := PhHelper.PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
 
 	Convey("测试 TM JobExec", t, func() {
 		jobId, _ := uuid.GenerateUUID()
-		process := []PhModel.JobProcess{{
+		process := PhModel.JobProcess{
 			PsType: "JOB",
 			JobConfig: map[string]interface{}{
 				"Name":           "TM-Submit",
@@ -146,19 +274,9 @@ func TestPhJobExec_Job(t *testing.T) {
 				"Conf":           "spark.yarn.appMasterEnv.KAFKA_PROXY_URI=http://59.110.31.50:8082/topics,spark.yarn.appMasterEnv.KAFKA_PROXY_R_CAL_TOPIC=listeningJobTask",
 				"Target":         "/Users/qianpeng/GitHub/NTMRCal/main.R",
 				"Parameters":     "NTM hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/cal_data hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/weightages hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/manager hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/curves-n hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/competitor hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/standard_time hdfs://192.168.100.137:9000//test/TMTest/inputParquet/TMInputParquet0815/level_data " + jobId,
-			}},
+			},
 		}
-		model := PhModel.JobReg{JobId: jobId, Process: process}
-
-		err := PhJobReg(model, kh, mh, rh)
+		err := ProcessExec(&process, kh)
 		So(err, ShouldBeNil)
-
-		beforeExecStepStr, _ := rh.Redis.HGet(jobId, "c_step").Result()
-		beforeExecStep, _ := strconv.Atoi(beforeExecStepStr)
-		So(beforeExecStep, ShouldEqual, 0)
-
-		PhJobExec(jobId, kh, mh, rh)
-
-		rh.Redis.Del(jobId)
 	})
 }
