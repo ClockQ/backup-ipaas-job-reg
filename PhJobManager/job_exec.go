@@ -39,7 +39,8 @@ func JobExec(jobId string,
 		return
 	}
 
-	if tStep == cStep {
+	if tStep <= cStep {
+		_ = rh.Redis.Del(jobId).Err()
 		_ = mh.Send(fmt.Sprintf("%s 执行完成", jobId))
 		return
 	}
@@ -97,6 +98,18 @@ func ProcessExec(process *PhModel.JobProcess, kh *PhHelper.PhKafkaHelper) (err e
 	return
 }
 
-func ProcessStatus() (err error) {
-	return nil
+func JobExecSuccess(jobId string, rh *PhHelper.PhRedisHelper) (err error) {
+	cStepStr, err := rh.Redis.HGet(jobId, "c_step").Result()
+	if err != nil {
+		return
+	}
+	cStep, err := strconv.Atoi(cStepStr)
+	if err != nil {
+		return
+	}
+	err = rh.Redis.HSet(jobId, "c_step", cStep+1).Err()
+	if err != nil {
+		return
+	}
+	return
 }
