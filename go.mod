@@ -27,6 +27,7 @@ replace (
 
 require (
 	github.com/alfredyang1986/blackmirror v0.1.1
+	github.com/aliyun/aliyun-oss-go-sdk v2.0.2+incompatible
 	github.com/elodina/go-avro v0.0.0-20160406082632-0c8185d9a3ba
 	github.com/elodina/go-kafka-avro v0.0.0-20160422130714-ab6b1d1c9a23
 	github.com/go-redis/redis v6.15.2+incompatible

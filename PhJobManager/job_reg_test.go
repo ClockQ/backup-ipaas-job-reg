@@ -37,19 +37,19 @@ func TestPhJobReg(t *testing.T) {
 		err := PhJobReg(model, kh, mh, rh)
 		So(err, ShouldBeNil)
 
-		cStepStr, _ := rh.Redis.HGet(jobId, "c_step").Result()
+		cStepStr, _ := rh.Redis.HGet("job_reg_"+jobId, "c_step").Result()
 		cStep, _ := strconv.Atoi(cStepStr)
 		So(cStep, ShouldEqual, 0)
 
-		tStepStr, _ := rh.Redis.HGet(jobId, "t_step").Result()
+		tStepStr, _ := rh.Redis.HGet("job_reg_"+jobId, "t_step").Result()
 		tStep, _ := strconv.Atoi(tStepStr)
 		So(tStep, ShouldEqual, 3)
 
 		for i := 0; i < tStep; i++ {
-			stepStr, _ := rh.Redis.HGet(jobId, fmt.Sprintf("step_%d", i)).Result()
+			stepStr, _ := rh.Redis.HGet("job_reg_"+jobId, fmt.Sprintf("step_%d", i)).Result()
 			So(stepStr, ShouldNotBeNil)
 		}
 
-		rh.Redis.Del(jobId)
+		rh.Redis.Del("job_reg_"+jobId)
 	})
 }

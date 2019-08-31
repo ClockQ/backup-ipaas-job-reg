@@ -16,7 +16,7 @@ func ConnectResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttH
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
 			// TODO: 协议标准化
-			_ = mh.Send("Job 执行进度: " + model.Progress)
+			_ = mh.Send("Job 执行进度: " + string(model.Progress))
 		case "FINISH":
 			err := PhJobManager.JobExecSuccess(model.JobId, rh)
 			PhPanic.MqttPanicError(err, mh)

@@ -4,5 +4,5 @@ type ConnectResponse struct {
 	JobId    string
 	Status   string
 	Message  string
-	Progress string
+	Progress int64
 }

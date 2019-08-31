@@ -17,7 +17,7 @@ func JobExec(jobId string,
 	mh *PhMqttHelper.PhMqttHelper,
 	rh *PhHelper.PhRedisHelper) {
 
-	tStepStr, err := rh.Redis.HGet(jobId, "t_step").Result()
+	tStepStr, err := rh.Redis.HGet("job_reg_"+jobId, "t_step").Result()
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
 		return
@@ -28,7 +28,7 @@ func JobExec(jobId string,
 		return
 	}
 
-	cStepStr, err := rh.Redis.HGet(jobId, "c_step").Result()
+	cStepStr, err := rh.Redis.HGet("job_reg_"+jobId, "c_step").Result()
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
 		return
@@ -40,12 +40,12 @@ func JobExec(jobId string,
 	}
 
 	if tStep <= cStep {
-		_ = rh.Redis.Del(jobId).Err()
+		_ = rh.Redis.Del("job_reg_"+jobId).Err()
 		_ = mh.Send(fmt.Sprintf("%s 执行完成", jobId))
 		return
 	}
 
-	stepStr, err := rh.Redis.HGet(jobId, fmt.Sprintf("step_%d", cStep)).Result()
+	stepStr, err := rh.Redis.HGet("job_reg_"+jobId, fmt.Sprintf("step_%d", cStep)).Result()
 	if err != nil {
 		PhPanic.MqttPanicError(err, mh)
 		return
@@ -112,7 +112,7 @@ func ProcessExec(process *PhModel.JobProcess, kh *PhHelper.PhKafkaHelper) (err e
 }
 
 func JobExecSuccess(jobId string, rh *PhHelper.PhRedisHelper) (err error) {
-	cStepStr, err := rh.Redis.HGet(jobId, "c_step").Result()
+	cStepStr, err := rh.Redis.HGet("job_reg_"+jobId, "c_step").Result()
 	if err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func JobExecSuccess(jobId string, rh *PhHelper.PhRedisHelper) (err error) {
 	if err != nil {
 		return
 	}
-	err = rh.Redis.HSet(jobId, "c_step", cStep+1).Err()
+	err = rh.Redis.HSet("job_reg_"+jobId, "c_step", cStep+1).Err()
 	if err != nil {
 		return
 	}

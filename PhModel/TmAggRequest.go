@@ -12,7 +12,7 @@ type TmAggRequest struct {
 	ProjectId  string
 	PeriodId   string
 	Phase      int32
-	Strategy   string // Agg2Cal | Report2Show | Cal2Report
+	Strategy   string // Agg2Cal | Cal2Report | Report2Show
 }
 
 func (model TmAggRequest) New() *TmAggRequest {

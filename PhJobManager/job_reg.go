@@ -16,12 +16,14 @@ func PhJobReg(model PhModel.JobReg,
 
 	jobId := model.JobId
 
-	err = rh.Redis.HSet(jobId, "c_step", 0).Err()
+	_ = rh.Redis.Del("job_reg_"+jobId)
+
+	err = rh.Redis.HSet("job_reg_"+jobId, "c_step", 0).Err()
 	if err != nil {
 		return
 	}
 
-	err = rh.Redis.HSet(jobId, "t_step", len(model.Process)).Err()
+	err = rh.Redis.HSet("job_reg_"+jobId, "t_step", len(model.Process)).Err()
 	if err != nil {
 		return
 	}
@@ -32,14 +34,14 @@ func PhJobReg(model PhModel.JobReg,
 			return err
 		}
 
-		err = rh.Redis.HSet(jobId, fmt.Sprintf("step_%d", i), value).Err()
+		err = rh.Redis.HSet("job_reg_"+jobId, fmt.Sprintf("step_%d", i), value).Err()
 		if err != nil {
 			return err
 		}
 	}
 
 	// job注册信息 24h 过期
-	err = rh.Redis.Expire(jobId, time.Hour*24).Err()
+	err = rh.Redis.Expire("job_reg_"+jobId, time.Hour*24).Err()
 	if err != nil {
 		return
 	}

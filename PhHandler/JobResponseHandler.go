@@ -22,6 +22,7 @@ func JobResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelpe
 			PhPanic.MqttPanicError(err, mh)
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
+			// TODO: 错误处理, 对redis信息的标识未做
 			// TODO: 协议标准化
 			PhPanic.MqttPanicError(errors.New("Channel 执行出错: " + model.Message), mh)
 		default:
