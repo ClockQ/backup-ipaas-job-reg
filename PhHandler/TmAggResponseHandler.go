@@ -10,23 +10,23 @@ import (
 	"strings"
 )
 
-func JobResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelper, rh *PhHelper.PhRedisHelper) func(_ interface{}) {
+func TmAggResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelper, rh *PhHelper.PhRedisHelper) func(interface{}) {
 	return func(receive interface{}) {
-		model := receive.(*PhModel.JobResponse)
+		model := receive.(*PhModel.ConnectResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
 			// TODO: 协议标准化
-			_ = mh.Send("Channel 执行进度: " + model.Progress)
+			_ = mh.Send("Agg 执行进度: " + model.Progress)
 		case "FINISH":
 			err := PhJobManager.JobExecSuccess(model.JobId, rh)
 			PhPanic.MqttPanicError(err, mh)
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
 			// TODO: 协议标准化
-			PhPanic.MqttPanicError(errors.New("Channel 执行出错: " + model.Message), mh)
+			PhPanic.MqttPanicError(errors.New("Agg 执行出错: "+model.Message), mh)
 		default:
 			// TODO: 协议标准化
-			PhPanic.MqttPanicError(errors.New("Channel Response 返回状态异常: " + model.Message), mh)
+			PhPanic.MqttPanicError(errors.New("Agg Response 返回状态异常: "+model.Message), mh)
 		}
 	}
 }

@@ -93,6 +93,19 @@ func ProcessExec(process *PhModel.JobProcess, kh *PhHelper.PhKafkaHelper) (err e
 		if err != nil {
 			return
 		}
+	case "AGG":
+		tmAggRequestTopic := os.Getenv("TMAGG_REQUEST_TOPIC")
+		tmAggRequest := PhModel.TmAggRequest{}.New()
+
+		err = tmAggRequest.Inject(process.JobConfig)
+		if err != nil {
+			return
+		}
+
+		err = kh.Send(tmAggRequestTopic, tmAggRequest)
+		if err != nil {
+			return
+		}
 	}
 
 	return

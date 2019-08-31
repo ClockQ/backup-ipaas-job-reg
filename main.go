@@ -22,10 +22,12 @@ func setEnv() {
 		LogPath      = "job_reg.log"
 		WriteTimeout = "4"
 
-		JobRequestTopic      = "cjob-test"
-		JobResponseTopic     = "cjob-test2"
+		JobRequestTopic      = "cjob-request"
+		JobResponseTopic     = "cjob-response"
 		ConnectRequestTopic  = "ConnectRequest"
 		ConnectResponseTopic = "ConnectResponse"
+		TmAggRequestTopic    = "TmAggRequest"
+		TmAggResponseTopic   = "TmAggResponse"
 
 		MqttUrl     = "http://59.110.31.215:6542/v0/publish"
 		MqttChannel = "test-qi/"
@@ -36,7 +38,7 @@ func setEnv() {
 
 		KafkabRokerUrl      = "123.56.179.133:9092"
 		SchemaRepositoryUrl = "http://123.56.179.133:8081"
-		KafkaGroup          = "test20190828"
+		KafkaGroup          = "job-reg"
 		CaLocation          = "/opt/kafka/pharbers-secrets/snakeoil-ca-1.crt"
 		CASignedLocation    = "/opt/kafka/pharbers-secrets/kafkacat-ca1-signed.pem"
 		SSLKeyLocation      = "/opt/kafka/pharbers-secrets/kafkacat.client.key"
@@ -49,10 +51,12 @@ func setEnv() {
 	_ = os.Setenv("LOG_PATH", LogPath)
 	_ = os.Setenv("WRITE_TIMEOUT", WriteTimeout)
 
-	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
-	_ = os.Setenv("JOB_RESPONSE_TOPIC", JobResponseTopic)
 	_ = os.Setenv("CONNECT_REQUEST_TOPIC", ConnectRequestTopic)
 	_ = os.Setenv("CONNECT_RESPONSE_TOPIC", ConnectResponseTopic)
+	_ = os.Setenv("JOB_REQUEST_TOPIC", JobRequestTopic)
+	_ = os.Setenv("JOB_RESPONSE_TOPIC", JobResponseTopic)
+	_ = os.Setenv("TMAGG_REQUEST_TOPIC", TmAggRequestTopic)
+	_ = os.Setenv("TMAGG_RESPONSE_TOPIC", TmAggResponseTopic)
 
 	_ = os.Setenv("MQTT_URL", MqttUrl)
 	_ = os.Setenv("MQTT_CHANNEL", MqttChannel)
@@ -81,6 +85,7 @@ func main() {
 
 	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
 	connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
+	tmAggResponseTopic := os.Getenv("TMAGG_RESPONSE_TOPIC")
 
 	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
 	mqttUrl := os.Getenv("MQTT_URL")
@@ -94,8 +99,9 @@ func main() {
 	rh := PhHelper.PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 
 	// 协程启动 Kafka Consumer
-	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(kh, mh, rh), mh)
 	go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(kh, mh, rh), mh)
+	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(kh, mh, rh), mh)
+	go kh.Linster([]string{tmAggResponseTopic}, &(PhModel.TmAggResponse{}), PhHandler.TmAggResponseHandler(kh, mh, rh), mh)
 
 	/// 下面不用管，网上抄的
 	// 主动关闭服务器
