@@ -12,7 +12,7 @@ import (
 
 func PhHttpHandler(kh *PhHelper.PhKafkaHelper,
 	mh *PhMqttHelper.PhMqttHelper,
-	rh *PhHelper.PhRedisHelper) (_ func(http.ResponseWriter, *http.Request)) {
+	rh *PhHelper.PhRedisHelper) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var response []byte

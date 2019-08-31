@@ -53,7 +53,7 @@ func (handler *PhMqttHelper) Send(model PhModel.PhMessageModel) (err error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		err = errors.New("MQTT 发送失败")
+		return errors.New("MQTT 发送失败")
 	}
 	return
 }

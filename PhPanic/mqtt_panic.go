@@ -13,9 +13,10 @@ func MqttPanicError(err error, mh *PhMqttHelper.PhMqttHelper) {
 	isTest, _ := strconv.ParseBool(os.Getenv("IS_TEST"))
 
 	if err != nil {
-		if isTest { //非测试环境才真正发送
+		if isTest { //测试环境直接panic
 			panic(err)
 		}
+		// TODO: 错误协议标准化
 		errMsg := fmt.Sprintf("Job Reg 执行出错: %s", err)
 		log.Println(errMsg)
 		bmlog.StandardLogger().Error(errMsg)

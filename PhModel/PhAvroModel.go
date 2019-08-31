@@ -68,6 +68,7 @@ func (model *PhSchemaModel) GenRecord(data interface{}) (record *avro.GenericRec
 	return
 }
 
+// 空实现
 func (model *PhSchemaModel) Inject(data map[string]interface{}) error {
 	return nil
 }
