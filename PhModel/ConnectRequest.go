@@ -10,18 +10,23 @@ type ConnectRequest struct {
 	SinkConfig   string
 }
 
+func (model ConnectRequest) New() *ConnectRequest {
+	model.PhSchemaModel = &PhSchemaModel{}
+	return &model
+}
+
 type SourceConfig map[string]string
 
 type SinkConfig map[string]string
 
 // TODO: 注意删除
-func (model ConnectRequest) GenTestData() *ConnectRequest {
+func (model ConnectRequest) GenTestData(jobId string) *ConnectRequest {
 	model.PhSchemaModel = &PhSchemaModel{}
-	model.JobId = "abc0000010"
+	model.JobId = jobId
 	model.Tag = "TM"
-	sourceConfigBytes, _ := json.Marshal(SourceConfig{}.GenTMSourceMongoData("abc0000010"))
+	sourceConfigBytes, _ := json.Marshal(SourceConfig{}.GenTMSourceMongoData(jobId))
 	model.SourceConfig = string(sourceConfigBytes)
-	sinkConfigBytes, _ := json.Marshal(SinkConfig{}.GenTestData())
+	sinkConfigBytes, _ := json.Marshal(SinkConfig{}.GenTestData(jobId))
 	model.SinkConfig = string(sinkConfigBytes)
 	return &model
 }
@@ -40,11 +45,11 @@ func (model SourceConfig) GenTMSourceMongoData(jobId string) SourceConfig {
 }
 
 // TODO: 注意删除
-func (model SinkConfig) GenTestData() SinkConfig {
+func (model SinkConfig) GenTestData(jobId string) SinkConfig {
 	model["connector.class"] = "com.pharbers.kafka.connect.elasticsearch.ElasticsearchSinkConnector"
 	model["tasks.max"] = "1"
-	model["jobId"] = "abc0000010"
-	model["topics"] = "abc0000010"
+	model["jobId"] = jobId
+	model["topics"] = jobId
 	model["key.ignore"] = "true"
 	model["connection.url"] = "http://59.110.31.215:9200"
 	model["type.name"] = ""

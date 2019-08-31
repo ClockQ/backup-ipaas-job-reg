@@ -7,6 +7,6 @@ type JobReg struct {
 }
 
 type JobProcess struct {
-	PsType string
-	test   string
+	PsType    string
+	JobConfig map[string]interface{}
 }

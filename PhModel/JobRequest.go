@@ -11,9 +11,15 @@ type JobRequest struct {
 	ExecutorCores  string
 	NumExecutors   string
 	Queue          string
-	Target         string
 	Files          string
+	Conf           string
+	Target         string
 	Parameters     string
+}
+
+func (model JobRequest) New() *JobRequest {
+	model.PhSchemaModel = &PhSchemaModel{}
+	return &model
 }
 
 // TODO: 注意删除
