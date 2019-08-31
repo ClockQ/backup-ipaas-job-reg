@@ -15,15 +15,18 @@ func JobResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelpe
 		model := receive.(*PhModel.JobResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
-			_ : mh.Send("Job 执行进度: " + model.Progress)
+			// TODO: 协议标准化
+			_ : mh.Send("Channel 执行进度: " + model.Progress)
 		case "FINISH":
 			err := PhJobManager.JobExecSuccess(model.JobId, rh)
 			PhPanic.MqttPanicError(err, mh)
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
-			PhPanic.MqttPanicError(errors.New("Job 执行出错: " + model.Message), mh)
+			// TODO: 协议标准化
+			PhPanic.MqttPanicError(errors.New("Channel 执行出错: " + model.Message), mh)
 		default:
-			PhPanic.MqttPanicError(errors.New("Job Response 返回状态异常: " + model.Message), mh)
+			// TODO: 协议标准化
+			PhPanic.MqttPanicError(errors.New("Channel Response 返回状态异常: " + model.Message), mh)
 		}
 	}
 }
