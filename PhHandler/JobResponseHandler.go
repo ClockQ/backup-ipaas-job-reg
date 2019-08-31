@@ -16,7 +16,7 @@ func JobResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelpe
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
 			// TODO: 协议标准化
-			_ = mh.Send("Channel 执行进度: " + model.Progress)
+			_ = mh.Send("Job 执行进度: " + model.Progress)
 		case "FINISH":
 			err := PhJobManager.JobExecSuccess(model.JobId, rh)
 			PhPanic.MqttPanicError(err, mh)
@@ -24,10 +24,10 @@ func JobResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelpe
 		case "ERROR":
 			// TODO: 错误处理, 对redis信息的标识未做
 			// TODO: 协议标准化
-			PhPanic.MqttPanicError(errors.New("Channel 执行出错: " + model.Message), mh)
+			PhPanic.MqttPanicError(errors.New("Job 执行出错: " + model.Message), mh)
 		default:
 			// TODO: 协议标准化
-			PhPanic.MqttPanicError(errors.New("Channel Response 返回状态异常: " + model.Message), mh)
+			PhPanic.MqttPanicError(errors.New("Job Response 返回状态异常: " + model.Message), mh)
 		}
 	}
 }
