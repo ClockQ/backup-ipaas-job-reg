@@ -34,6 +34,10 @@ func (model *PhSchemaModel) GenSchema(data interface{}) PhAvroModel {
 		}
 		fieldName := v.Type().Field(j).Name
 		fieldType := v.Field(j).Type().Name()
+		switch fieldType {
+		case "int", "int32", "int64":
+			fieldType = "int"
+		}
 		fields = append(fields, map[string]string{"name": fieldName, "type": fieldType})
 	}
 	schemaMap["fields"] = fields

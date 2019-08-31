@@ -12,11 +12,11 @@ import (
 
 func TmAggResponseHandler(kh *PhHelper.PhKafkaHelper, mh *PhMqttHelper.PhMqttHelper, rh *PhHelper.PhRedisHelper) func(interface{}) {
 	return func(receive interface{}) {
-		model := receive.(*PhModel.ConnectResponse)
+		model := receive.(*PhModel.TmAggResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
 			// TODO: 协议标准化
-			_ = mh.Send("Agg 执行进度: " + model.Progress)
+			_ = mh.Send("Agg 执行进度: " + "0")
 		case "FINISH":
 			err := PhJobManager.JobExecSuccess(model.JobId, rh)
 			PhPanic.MqttPanicError(err, mh)

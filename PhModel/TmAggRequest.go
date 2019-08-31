@@ -11,7 +11,7 @@ type TmAggRequest struct {
 	ProposalId string
 	ProjectId  string
 	PeriodId   string
-	Phase      string
+	Phase      int32
 	Strategy   string // Agg2Cal | Report2Show | Cal2Report
 }
 
