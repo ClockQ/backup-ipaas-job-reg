@@ -20,7 +20,7 @@ func TestMqttPanicError(t *testing.T) {
 	_ = os.Setenv("IS_TEST", "true")
 
 	Convey("测试 MqttPanicError", t, func() {
-		model := PhModel.JobRegResponse{}.SetError("JobId", "测试 MqttPanicError")
-		MqttPanicError(model, nil, nil)
+		model := PhModel.JobRegResponse{}.SetError("jobId", "测试 MqttPanicError")
+		MqttPanicError(model, nil)
 	})
 }

@@ -1,13 +1,11 @@
 package PhHandler
 
 import (
-	"errors"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobManager"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhPanic"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
-	"strconv"
 	"strings"
 )
 
@@ -16,18 +14,26 @@ func ConnectResponseHandler(kh *PhChannel.PhKafkaHelper, mh *PhThirdHelper.PhMqt
 		model := receive.(*PhModel.ConnectResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
-			// TODO: 协议标准化
-			_ = mh.Send("Channel 执行进度: " + strconv.FormatInt(model.Progress, 10))
+			_ = mh.Send(PhModel.JobRegResponse{}.SetRunning(model.JobId, "", nil))
 		case "FINISH":
-			err := PhJobManager.JobExecSuccess(model.JobId, rh)
-			PhPanic.MqttPanicError_del(err, mh)
+			final, err := PhJobManager.JobExecSuccess(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+				return
+			}
+			if final {
+				_ = mh.Send(PhModel.JobRegResponse{}.SetFinish(model.JobId, nil))
+				return
+			}
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Channel 执行出错: "+model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, model.Message), mh)
+			err := PhJobManager.JobExecFatal(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+			}
 		default:
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Channel Response 返回状态异常: "+model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, "Job Response 返回状态异常: " + model.Status), mh)
 		}
 	}
 }

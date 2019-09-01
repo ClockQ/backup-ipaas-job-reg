@@ -26,22 +26,22 @@ func (helper PhOssHelper) New(endpoint, accessKeyId, accessKeySecret string) *Ph
 	return &helper
 }
 
-func (helper PhOssHelper) GetObject(bucketName, objectKey string, options ...oss.Option) (string, error) {
+func (helper PhOssHelper) GetObject(bucketName, objectKey string, options ...oss.Option) ([]byte, error) {
 	bucket, err := helper.Oss.Bucket(bucketName)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
 	read, err := bucket.GetObject(objectKey)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(read)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }

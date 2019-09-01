@@ -6,7 +6,6 @@ type JobProcess struct {
 }
 
 type JobReg struct {
-	Id      string
 	JobId   string
 	Process []JobProcess
 }

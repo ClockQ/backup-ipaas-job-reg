@@ -1,14 +1,18 @@
 package PhThirdHelper
 
 import (
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhEnv"
 	. "github.com/smartystreets/goconvey/convey"
+	"os"
 	"testing"
 )
 
 func TestPhOssHelper(t *testing.T) {
-	endpoint := "oss-cn-beijing.aliyuncs.com"
-	accessKeyId := ""
-	accessKeySecret := ""
+	PhEnv.SetEnv()
+
+	endpoint := os.Getenv("ENDPOINT")
+	accessKeyId := os.Getenv("ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("ACCESS_KEY_SECRET")
 	bucketName := "pharbers-resources"
 	objectKey := "TMCal.json"
 

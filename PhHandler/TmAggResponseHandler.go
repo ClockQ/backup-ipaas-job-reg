@@ -1,7 +1,6 @@
 package PhHandler
 
 import (
-	"errors"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobManager"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
@@ -15,18 +14,26 @@ func TmAggResponseHandler(kh *PhChannel.PhKafkaHelper, mh *PhThirdHelper.PhMqttH
 		model := receive.(*PhModel.TmAggResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
-			// TODO: 协议标准化
-			_ = mh.Send("Agg 执行进度: " + "0")
+			_ = mh.Send(PhModel.JobRegResponse{}.SetRunning(model.JobId, "", nil))
 		case "FINISH":
-			err := PhJobManager.JobExecSuccess(model.JobId, rh)
-			PhPanic.MqttPanicError_del(err, mh)
+			final, err := PhJobManager.JobExecSuccess(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+				return
+			}
+			if final {
+				_ = mh.Send(PhModel.JobRegResponse{}.SetFinish(model.JobId, nil))
+				return
+			}
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Agg 执行出错: "+model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, model.Message), mh)
+			err := PhJobManager.JobExecFatal(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+			}
 		default:
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Agg Response 返回状态异常: "+model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, "Channel Response 返回状态异常: " + model.Status), mh)
 		}
 	}
 }

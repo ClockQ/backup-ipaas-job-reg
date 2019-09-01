@@ -1,20 +1,21 @@
 package PhThirdHelper
 
 import (
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhEnv"
 	"github.com/hashicorp/go-uuid"
 	. "github.com/smartystreets/goconvey/convey"
+	"os"
 	"testing"
 )
 
 func TestPhRedisHelper(t *testing.T) {
+	PhEnv.SetEnv()
 
-	const(
-		RedisHost = ""
-		RedisPort = ""
-		RedisPwd  = ""
-	)
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+	redisPwd := os.Getenv("REDIS_PWD")
 
-	rh := PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
+	rh := PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 	id, _ := uuid.GenerateUUID()
 
 	Convey("测试 Redis 写入 Hash", t, func() {

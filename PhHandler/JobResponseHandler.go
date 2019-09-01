@@ -1,7 +1,6 @@
 package PhHandler
 
 import (
-	"errors"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhJobManager"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
@@ -15,19 +14,26 @@ func JobResponseHandler(kh *PhChannel.PhKafkaHelper, mh *PhThirdHelper.PhMqttHel
 		model := receive.(*PhModel.JobResponse)
 		switch strings.ToUpper(model.Status) {
 		case "RUNNING":
-			// TODO: 协议标准化
-			_ = mh.Send("Job 执行进度: " + model.Progress)
+			_ = mh.Send(PhModel.JobRegResponse{}.SetRunning(model.JobId, model.Progress, nil))
 		case "FINISH":
-			err := PhJobManager.JobExecSuccess(model.JobId, rh)
-			PhPanic.MqttPanicError_del(err, mh)
+			final, err := PhJobManager.JobExecSuccess(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+				return
+			}
+			if final {
+				_ = mh.Send(PhModel.JobRegResponse{}.SetFinish(model.JobId, nil))
+				return
+			}
 			go PhJobManager.JobExec(model.JobId, kh, mh, rh)
 		case "ERROR":
-			// TODO: 错误处理, 对redis信息的标识未做
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Job 执行出错: " + model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, model.Message), mh)
+			err := PhJobManager.JobExecFatal(model.JobId, rh)
+			if err != nil {
+				PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, err.Error()), mh)
+			}
 		default:
-			// TODO: 协议标准化
-			PhPanic.MqttPanicError_del(errors.New("Job Response 返回状态异常: " + model.Message), mh)
+			PhPanic.MqttPanicError(PhModel.JobRegResponse{}.SetError(model.JobId, "Job Response 返回状态异常: " + model.Status), mh)
 		}
 	}
 }

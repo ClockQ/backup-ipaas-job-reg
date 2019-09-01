@@ -15,6 +15,7 @@ type JobRequest struct {
 	ExecutorCores  string
 	NumExecutors   string
 	Queue          string
+	Jars           string
 	Files          string
 	Conf           string
 	Target         string
