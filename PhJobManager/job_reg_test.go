@@ -2,9 +2,9 @@ package PhJobManager
 
 import (
 	"fmt"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
 	"github.com/hashicorp/go-uuid"
 	. "github.com/smartystreets/goconvey/convey"
 	"strconv"
@@ -21,9 +21,9 @@ const (
 )
 
 func TestPhJobReg(t *testing.T) {
-	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
-	mh := PhMqttHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
-	rh := PhHelper.PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
+	kh := PhChannel.PhKafkaHelper{}.New(SchemaRepositoryUrl)
+	mh := PhThirdHelper.PhMqttHelper{}.New(MqttUrl, MqttChannel)
+	rh := PhThirdHelper.PhRedisHelper{}.New(RedisHost, RedisPort, RedisPwd)
 
 	Convey("测试 TM JobReg", t, func() {
 		jobId, _ := uuid.GenerateUUID()
@@ -50,6 +50,6 @@ func TestPhJobReg(t *testing.T) {
 			So(stepStr, ShouldNotBeNil)
 		}
 
-		rh.Redis.Del("job_reg_"+jobId)
+		rh.Redis.Del("job_reg_" + jobId)
 	})
 }

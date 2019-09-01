@@ -1,10 +1,9 @@
-package PhMqttHelper
+package PhThirdHelper
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"log"
 	"net/http"
 )
@@ -23,7 +22,7 @@ func (handler *PhMqttHelper) SetChannel(url string) *PhMqttHelper {
 	return handler
 }
 
-func (handler *PhMqttHelper) Send(model PhModel.PhMessageModel) (err error) {
+func (handler *PhMqttHelper) Send(model interface{}) (err error) {
 	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.channel)
 
 	header := make(map[string]string)

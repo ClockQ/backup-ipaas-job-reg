@@ -3,20 +3,20 @@ package PhJobManager
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhMqttHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
 	"time"
 )
 
 func PhJobReg(model PhModel.JobReg,
-	_ *PhHelper.PhKafkaHelper,
-	_ *PhMqttHelper.PhMqttHelper,
-	rh *PhHelper.PhRedisHelper) (err error) {
+	_ *PhChannel.PhKafkaHelper,
+	_ *PhThirdHelper.PhMqttHelper,
+	rh *PhThirdHelper.PhRedisHelper) (err error) {
 
 	jobId := model.JobId
 
-	_ = rh.Redis.Del("job_reg_"+jobId)
+	_ = rh.Redis.Del("job_reg_" + jobId)
 
 	err = rh.Redis.HSet("job_reg_"+jobId, "c_step", 0).Err()
 	if err != nil {

@@ -1,7 +1,7 @@
 package PhJobManager
 
 import (
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhHelper"
+	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/hashicorp/go-uuid"
 	. "github.com/smartystreets/goconvey/convey"
@@ -63,13 +63,13 @@ func setEnv() {
 func TestProcessExec_Channel_M2H(t *testing.T) {
 	setEnv()
 
-	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
+	kh := PhChannel.PhKafkaHelper{}.New(SchemaRepositoryUrl)
 
 	Convey("测试 TM Channel: Mongodb -> HDFS", t, func() {
 		jobId, _ := uuid.GenerateUUID()
 		process := PhModel.JobProcess{
 			PsType: "CHANNEL",
-			JobConfig: map[string]interface{}{
+			Actions: map[string]interface{}{
 				"JobId": jobId,
 				"Tag":   "TM",
 				"SourceConfig": map[string]interface{}{
@@ -103,13 +103,13 @@ func TestProcessExec_Channel_M2H(t *testing.T) {
 func TestProcessExec_Channel_H2M(t *testing.T) {
 	setEnv()
 
-	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
+	kh := PhChannel.PhKafkaHelper{}.New(SchemaRepositoryUrl)
 
 	Convey("测试 TM Channel: HDFS -> Mongodb", t, func() {
 		jobId, _ := uuid.GenerateUUID()
 		process := PhModel.JobProcess{
 			PsType: "CHANNEL",
-			JobConfig: map[string]interface{}{
+			Actions: map[string]interface{}{
 				"JobId": jobId,
 				"Tag":   "TM",
 				"SourceConfig": map[string]interface{}{
@@ -149,13 +149,13 @@ func TestProcessExec_Channel_H2M(t *testing.T) {
 func TestProcessExec_Channel_M2E(t *testing.T) {
 	setEnv()
 
-	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
+	kh := PhChannel.PhKafkaHelper{}.New(SchemaRepositoryUrl)
 
 	Convey("测试 TM Channel: Mongodb -> ES", t, func() {
 		jobId, _ := uuid.GenerateUUID()
 		process := PhModel.JobProcess{
 			PsType: "CHANNEL",
-			JobConfig: map[string]interface{}{
+			Actions: map[string]interface{}{
 				"JobId": jobId,
 				"Tag":   "TM",
 				"SourceConfig": map[string]interface{}{
@@ -190,13 +190,13 @@ func TestProcessExec_Channel_M2E(t *testing.T) {
 func TestProcessExec_Job(t *testing.T) {
 	setEnv()
 
-	kh := PhHelper.PhKafkaHelper{}.New(SchemaRepositoryUrl)
+	kh := PhChannel.PhKafkaHelper{}.New(SchemaRepositoryUrl)
 
 	Convey("测试 TM JobExec", t, func() {
 		jobId, _ := uuid.GenerateUUID()
 		process := PhModel.JobProcess{
 			PsType: "JOB",
-			JobConfig: map[string]interface{}{
+			Actions: map[string]interface{}{
 				"Name":           "TM-Submit",
 				"JobType":        "R",
 				"Master":         "yarn",

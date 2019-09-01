@@ -84,8 +84,8 @@ func main() {
 	writeTimeout := time.Second * time.Duration(writeTimeoutInt)
 
 	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
-	connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
-	tmAggResponseTopic := os.Getenv("TMAGG_RESPONSE_TOPIC")
+	//connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
+	//tmAggResponseTopic := os.Getenv("TMAGG_RESPONSE_TOPIC")
 
 	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
 	mqttUrl := os.Getenv("MQTT_URL")
@@ -99,9 +99,9 @@ func main() {
 	rh := PhHelper.PhRedisHelper{}.New(redisHost, redisPort, redisPwd)
 
 	// 协程启动 Kafka Consumer
-	go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(kh, mh, rh), mh)
+	//go kh.Linster([]string{connectResponseTopic}, &(PhModel.ConnectResponse{}), PhHandler.ConnectResponseHandler(kh, mh, rh), mh)
 	go kh.Linster([]string{jobResponseTopic}, &(PhModel.JobResponse{}), PhHandler.JobResponseHandler(kh, mh, rh), mh)
-	go kh.Linster([]string{tmAggResponseTopic}, &(PhModel.TmAggResponse{}), PhHandler.TmAggResponseHandler(kh, mh, rh), mh)
+	//go kh.Linster([]string{tmAggResponseTopic}, &(PhModel.TmAggResponse{}), PhHandler.TmAggResponseHandler(kh, mh, rh), mh)
 
 	/// 下面不用管，网上抄的
 	// 主动关闭服务器

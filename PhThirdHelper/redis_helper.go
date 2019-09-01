@@ -1,4 +1,4 @@
-package PhHelper
+package PhThirdHelper
 
 import "github.com/go-redis/redis"
 

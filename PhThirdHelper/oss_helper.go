@@ -1,8 +1,8 @@
-package PhHelper
+package PhThirdHelper
 
 import (
+	"bytes"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"io"
 )
 
 type PhOssHelper struct {
@@ -26,11 +26,22 @@ func (helper PhOssHelper) New(endpoint, accessKeyId, accessKeySecret string) *Ph
 	return &helper
 }
 
-func (helper PhOssHelper) GetObject(bucketName, objectKey string, options ...oss.Option) (io.ReadCloser, error) {
+func (helper PhOssHelper) GetObject(bucketName, objectKey string, options ...oss.Option) (string, error) {
 	bucket, err := helper.Oss.Bucket(bucketName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return bucket.GetObject(objectKey)
+	read, err := bucket.GetObject(objectKey)
+	if err != nil {
+		return "", err
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = buf.ReadFrom(read)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }
