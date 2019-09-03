@@ -4,26 +4,27 @@ FROM golang:1.12.4-alpine as builder
 #作者
 MAINTAINER Pharbers "zyqi@pharbers.com"
 
-# 安装系统级依赖
-RUN apk add --no-cache git gcc musl-dev mercurial bash gcc g++ make pkgconfig openssl-dev
-ENV PKG_CONFIG_PATH /usr/lib/pkgconfig
+# 安装 主要 依赖
+RUN apk add --no-cache bash git
 
-# 下载 librdkafka
-RUN git clone https://github.com/edenhill/librdkafka.git /app/librdkafka
-
-WORKDIR /app/librdkafka
-RUN ./configure --prefix /usr  && \
-make && \
-make install
-
-# 以LABEL行的变动(version的变动)来划分(变动以上)使用cache和(变动以下)不使用cache
-LABEL JobReg.version="1.0.0" maintainer="ClockQ"
+# 安装 rdkafka 依赖
+RUN apk add --no-cache gcc g++ make pkgconfig openssl-dev \
+&& git clone https://github.com/edenhill/librdkafka.git -b v1.1.0 $GOPATH/librdkafka \
+&& cd $GOPATH/librdkafka/ \
+&& ./configure --prefix /usr \
+&& make \
+&& make install
 
 WORKDIR /app
-COPY . .
 
+# go mod 依赖下载, 提出来是利用缓存
+COPY go.mod go.sum ./
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+
+# go build 编译项目
+COPY . ./
+RUN go build
+
 
 # prod 源镜像
 FROM alpine:latest as prod
@@ -31,11 +32,21 @@ FROM alpine:latest as prod
 #作者
 MAINTAINER Pharbers "zyqi@pharbers.com"
 
-RUN apk --no-cache add ca-certificates
+# 安装 主要 依赖
+RUN apk --no-cache add bash git
+
+# 安装 rdkafka 依赖
+RUN apk add --no-cache gcc g++ make pkgconfig openssl-dev \
+&& git clone https://github.com/edenhill/librdkafka.git -b v1.1.0 /tmp/librdkafka \
+&& cd /tmp/librdkafka/ \
+&& ./configure --prefix /usr \
+&& make \
+&& make install
 
 WORKDIR /app
 
-COPY --from=0 /app/ipaas-job-reg .
+# 提取执行文件
+COPY --from=0 /app/ipaas-job-reg ./
 
 EXPOSE 9213
-ENTRYPOINT ["/app/ipaas-job-reg"]
+CMD ["./ipaas-job-reg"]

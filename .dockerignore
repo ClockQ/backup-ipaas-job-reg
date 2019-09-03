@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+.git
+.gitignore
+.dockerignore
+*.log
+README.md
+Dockerfile
+docker-compose.yaml
+PhEnv/

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
-	"github.com/PharbersDeveloper/ipaas-job-reg/PhEnv"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
@@ -16,7 +15,7 @@ import (
 )
 
 func main() {
-	PhEnv.SetEnv()
+	//PhEnv.SetEnv()
 
 	ip := os.Getenv("IP")
 	port := os.Getenv("PORT")
@@ -24,8 +23,8 @@ func main() {
 	writeTimeoutInt, _ := strconv.Atoi(os.Getenv("JOB_REQUEST_TOPIC"))
 	writeTimeout := time.Second * time.Duration(writeTimeoutInt)
 
-	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
 	//connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
+	jobResponseTopic := os.Getenv("JOB_RESPONSE_TOPIC")
 	//tmAggResponseTopic := os.Getenv("TMAGG_RESPONSE_TOPIC")
 
 	schemaRepositoryUrl := os.Getenv("BM_KAFKA_SCHEMA_REGISTRY_URL")
@@ -79,7 +78,7 @@ func main() {
 			log.Fatal("Server closed under request")
 		} else {
 			bmlog.StandardLogger().Error("Server closed unexpected", err)
-			log.Fatal("Server closed unexpected", err)
+			log.Fatal("Server closed unexpected: ", err)
 		}
 	}
 	bmlog.StandardLogger().Error("Server exited")
