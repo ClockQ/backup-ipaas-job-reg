@@ -3,9 +3,8 @@ package PhPanic
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/PharbersDeveloper/bp-go-lib/log"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
-	"github.com/alfredyang1986/blackmirror/bmlog"
-	"log"
 	"os"
 	"strconv"
 )
@@ -18,8 +17,7 @@ func PanicError(err error, mh *PhThirdHelper.PhMqttHelper) {
 			panic(err)
 		}
 		errMsg := fmt.Sprintf("Job Reg 执行出错: %s", err)
-		log.Println(errMsg)
-		bmlog.StandardLogger().Error(errMsg)
+		log.NewLogicLoggerBuilder().Build().Error(errMsg)
 		_ = mh.Send(errMsg)
 	}
 }
@@ -31,7 +29,6 @@ func MqttPanicError(model interface{}, mh *PhThirdHelper.PhMqttHelper) {
 		panic(string(out))
 	}
 
-	log.Println(model)
-	bmlog.StandardLogger().Error(model)
+	log.NewLogicLoggerBuilder().Build().Error(model)
 	_ = mh.Send(model)
 }

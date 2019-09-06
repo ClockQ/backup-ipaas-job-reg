@@ -3,12 +3,11 @@ package PhChannel
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/PharbersDeveloper/bp-go-lib/log"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/alfredyang1986/blackmirror/bmkafka"
-	"github.com/alfredyang1986/blackmirror/bmlog"
 	"github.com/elodina/go-avro"
 	kafkaAvro "github.com/elodina/go-kafka-avro"
-	"log"
 )
 
 type PhKafkaHelper struct {
@@ -33,7 +32,7 @@ func (handler PhKafkaHelper) Send(topic string, model PhModel.PhAvroModel) (err 
 	if err != nil {
 		return
 	}
-	log.Printf("Kafka 发送消息 %s 到 %s \n", record.String(), topic)
+	log.NewLogicLoggerBuilder().Build().Infof("Kafka 发送消息 %s 到 %s \n", record.String(), topic)
 
 	encoder := kafkaAvro.NewKafkaAvroEncoder(handler.schemaRepositoryUrl)
 	recordByteArr, err := encoder.Encode(record)
@@ -51,20 +50,18 @@ func (handler PhKafkaHelper) Linster(topics []string, msgModel interface{}, subs
 		record, err := decoder.Decode(receive.([]byte))
 		if err != nil {
 			errMsg := fmt.Sprintf("Kafka 接受的 %s 信息解析出错: %s", topics, err)
-			log.Println(errMsg)
-			bmlog.StandardLogger().Error(errMsg)
+			log.NewLogicLoggerBuilder().Build().Error(errMsg)
 			return
 		}
 
 		err = json.Unmarshal([]byte(record.(*avro.GenericRecord).String()), msgModel)
 		if err != nil {
 			errMsg := fmt.Sprintf("Kafka 接受的 %s 信息解析出错: %s", topics, err)
-			log.Println(errMsg)
-			bmlog.StandardLogger().Error(errMsg)
+			log.NewLogicLoggerBuilder().Build().Error(errMsg)
 			return
 		}
 
-		log.Printf("Kafka 接受从 %s 来的消息 %#v \n", topics, msgModel)
+		log.NewLogicLoggerBuilder().Build().Infof("Kafka 接受从 %s 来的消息 %#v \n", topics, msgModel)
 		subscribeFunc(msgModel)
 	})
 }

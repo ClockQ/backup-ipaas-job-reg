@@ -1,12 +1,11 @@
 package main
 
 import (
+	"github.com/PharbersDeveloper/bp-go-lib/log"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhChannel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhHandler"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhModel"
 	"github.com/PharbersDeveloper/ipaas-job-reg/PhThirdHelper"
-	"github.com/alfredyang1986/blackmirror/bmlog"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,13 +13,23 @@ import (
 	"time"
 )
 
+const (
+	ProjName = "job-reg"
+)
+
 func main() {
 	//PhEnv.SetEnv()
+
+	_ = os.Setenv("BP_LOG_TIME_FORMAT", "2006-01-02 15:04:05")
+
+	if ok := os.Getenv("PROJECT_NAME"); ok == "" {
+		_ = os.Setenv("PROJECT_NAME", ProjName)
+	}
 
 	ip := os.Getenv("IP")
 	port := os.Getenv("PORT")
 	prefix := os.Getenv("PREFIX")
-	writeTimeoutInt, _ := strconv.Atoi(os.Getenv("JOB_REQUEST_TOPIC"))
+	writeTimeoutInt, _ := strconv.Atoi(os.Getenv("WRITE_TIMEOUT"))
 	writeTimeout := time.Second * time.Duration(writeTimeoutInt)
 
 	//connectResponseTopic := os.Getenv("CONNECT_RESPONSE_TOPIC")
@@ -58,15 +67,14 @@ func main() {
 		WriteTimeout: writeTimeout,
 		Handler:      mux,
 	}
+	bpLog := log.NewLogicLoggerBuilder().Build()
 
-	bmlog.StandardLogger().Info("Starting httpserver in " + port)
-	log.Println("Starting httpserver in " + port)
+	bpLog.Info("Starting httpserver in " + port)
 	go func() {
 		// 接收退出信号
 		<-quit
 		if err := server.Close(); err != nil {
-			bmlog.StandardLogger().Error("Close server:", err)
-			log.Fatal("Close server:", err)
+			bpLog.Error("Close server:", err)
 		}
 	}()
 
@@ -74,13 +82,10 @@ func main() {
 	if err != nil {
 		// 正常退出
 		if err == http.ErrServerClosed {
-			bmlog.StandardLogger().Error("Server closed under request")
-			log.Fatal("Server closed under request")
+			bpLog.Error("Server closed under request")
 		} else {
-			bmlog.StandardLogger().Error("Server closed unexpected", err)
-			log.Fatal("Server closed unexpected: ", err)
+			bpLog.Error("Server closed unexpected", err)
 		}
 	}
-	bmlog.StandardLogger().Error("Server exited")
-	log.Fatal("Server exited")
+	bpLog.Error("Server exited")
 }

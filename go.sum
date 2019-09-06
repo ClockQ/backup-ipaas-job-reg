@@ -1,3 +1,5 @@
+github.com/PharbersDeveloper/bp-go-lib v0.0.2 h1:sD8az2/msdtenmcP04zAd8nbMx5n0CDVeAoYvnNtggk=
+github.com/PharbersDeveloper/bp-go-lib v0.0.2/go.mod h1:OhFQmWamAmC/lNPugXpNy+R618UPkZ2rvKkAhp41zRM=
 github.com/alfredyang1986/blackmirror v0.1.1 h1:v2s/jKKXqsgxwWV0RenSjlR4ioBlPp8ZDutO5PHlZmg=
 github.com/alfredyang1986/blackmirror v0.1.1/go.mod h1:0xYt8TEuKtPKwS6jIh24PKT3BSyytCF9DSCihMSabzI=
 github.com/aliyun/aliyun-oss-go-sdk v2.0.2+incompatible h1:ih9c8mCyATUBf2w+VqP5k1ul6edhp6ejxZNC5kDp7PE=

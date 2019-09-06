@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
+	"github.com/PharbersDeveloper/bp-go-lib/log"
 	"net/http"
 )
 
@@ -23,7 +23,7 @@ func (handler *PhMqttHelper) SetChannel(url string) *PhMqttHelper {
 }
 
 func (handler *PhMqttHelper) Send(model interface{}) (err error) {
-	log.Printf("MQTT 发送消息 %#v 到 %s \n", model, handler.channel)
+	log.NewLogicLoggerBuilder().Build().Infof("MQTT 发送消息 %#v 到 %s \n", model, handler.channel)
 
 	header := make(map[string]string)
 	header["method"] = "Publish"
