@@ -41,7 +41,13 @@ RUN apk add --no-cache gcc g++ make pkgconfig openssl-dev \
 && cd /tmp/librdkafka/ \
 && ./configure --prefix /usr \
 && make \
-&& make install
+&& make install \
+&& apk del gcc g++ make pkgconfig openssl-dev
+
+# 设置时区
+RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && apk del tzdata
 
 WORKDIR /app
 
